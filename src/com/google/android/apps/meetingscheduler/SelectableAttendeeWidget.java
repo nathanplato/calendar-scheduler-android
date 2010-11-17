@@ -22,9 +22,11 @@ import android.text.TextUtils.TruncateAt;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 
 /**
  * Selectable Attendee List item.
@@ -76,6 +78,11 @@ public class SelectableAttendeeWidget extends LinearLayout {
     lpCb.gravity = Gravity.RIGHT;
     checkBox.setLayoutParams(lpCb);
     horizontalLayout.addView(checkBox);
+    checkBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+      public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        setBackgroundColor();
+      }
+    });
 
     // Adding the nice little border
     LinearLayout border = new LinearLayout(context);
@@ -88,19 +95,46 @@ public class SelectableAttendeeWidget extends LinearLayout {
     this.setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
         checkBox.setChecked(!checkBox.isChecked());
-        if (checkBox.isChecked()) {
-          getThis().setBackgroundColor(Color.argb(100, 200, 200, 200));
-        } else {
-          getThis().setBackgroundColor(Color.TRANSPARENT);
-        }
+        setBackgroundColor();
       }
     });
   }
 
+  /**
+   * Sets the background color accourding to the selected state of the Checkbox.
+   */
+  private void setBackgroundColor() {
+    if (checkBox.isChecked()) {
+      getThis().setBackgroundColor(Color.argb(100, 200, 200, 200));
+    } else {
+      getThis().setBackgroundColor(Color.TRANSPARENT);
+    }
+  }
+
+  /**
+   * Returns the attendee selectable by this widget.
+   *
+   * @return The attendee selectable by this widget
+   */
   public Attendee getAttendee() {
     return attendee;
   }
 
+  /**
+   * Returns true if the Attendee is selected for the meeting.
+   *
+   * @return true if the Attendee is selected for the meeting
+   */
+  @Override
+  public boolean isSelected(){
+    return checkBox.isChecked();
+  }
+
+  /**
+   * Returns this SelectableAttendeeWidget.
+   *
+   * @return This SelectableAttendeeWidget
+   */
   private SelectableAttendeeWidget getThis() {
     return this;
   }

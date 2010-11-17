@@ -44,10 +44,9 @@
 		android:paddingRight="5px" android:orientation="horizontal">
 		<Button android:id="@+id/find_time_button"
 			android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:text="Find meeting time" />
-
+			android:text="@string/find_meeting_button" />
 		<TextView android:layout_width="fill_parent"
-			android:paddingBottom="5px" android:paddingLeft="3px" android:gravity="center_vertical" android:textSize="11dip" android:layout_weight="1"
+			android:paddingBottom="6px" android:paddingLeft="8px" android:gravity="center_vertical" android:textSize="11dip" android:layout_weight="1"
 			android:layout_height="fill_parent" android:text="@string/settings_text" />
 	</LinearLayout>
 </LinearLayout>

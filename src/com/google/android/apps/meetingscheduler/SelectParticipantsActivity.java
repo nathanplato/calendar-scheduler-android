@@ -5,6 +5,12 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 
+/**
+ * Ativity Screen where the user selects the meeting attendees.
+ *
+ * @since 2.2
+ * @author Nicolas Garnier (nivco@google.com)
+ */
 public class SelectParticipantsActivity extends Activity {
 
   /** The Attendee Retriever */
