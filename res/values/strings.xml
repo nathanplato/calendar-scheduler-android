@@ -4,5 +4,5 @@
     <string name="app_name">Meeting Scheduler</string>
     <string name="sub_title">Finds the perfect meeting automagically for you</string>
     <string name="settings_text">Settings: 1h meeting\nOver the next week\nNo working hours consideration</string>
-    <string name="find_meeting_button">Find meeting</string>
+    <string name="find_meeting_button">Find meetings</string>
 </resources>
