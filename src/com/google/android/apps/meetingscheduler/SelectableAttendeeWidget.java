@@ -92,7 +92,8 @@ public class SelectableAttendeeWidget extends LinearLayout {
     addView(border);
 
     // On click trigger the checkbox
-    this.setOnClickListener(new OnClickListener() {
+    setClickable(true);
+    setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
         checkBox.setChecked(!checkBox.isChecked());
         setBackgroundColor();
@@ -101,13 +102,13 @@ public class SelectableAttendeeWidget extends LinearLayout {
   }
 
   /**
-   * Sets the background color accourding to the selected state of the Checkbox.
+   * Sets the background color according to the selected state of the Checkbox.
    */
   private void setBackgroundColor() {
     if (checkBox.isChecked()) {
-      getThis().setBackgroundColor(Color.argb(100, 200, 200, 200));
+      setBackgroundColor(Color.argb(100, 200, 200, 200));
     } else {
-      getThis().setBackgroundColor(Color.TRANSPARENT);
+      setBackgroundColor(Color.TRANSPARENT);
     }
   }
 
@@ -131,12 +132,14 @@ public class SelectableAttendeeWidget extends LinearLayout {
   }
 
   /**
-   * Returns this SelectableAttendeeWidget.
+   * Sets if the Attendee is selected for the meeting.
    *
-   * @return This SelectableAttendeeWidget
+   * @param selected true if the Attendee is selected for the meeting
    */
-  private SelectableAttendeeWidget getThis() {
-    return this;
+  @Override
+  public void setSelected(boolean selected){
+    checkBox.setChecked(selected);
+    setBackgroundColor();
   }
 
 }

@@ -28,11 +28,6 @@ import java.util.List;
  */
 public class MockAttendeeRetriever implements AttendeeRetriever {
 
-  /**
-   * Returns the list of attendees selectable.
-   *
-   * @return The list of selectable attendees
-   */
   public List<Attendee> getPossibleAttendees() {
     List<Attendee> attendees = new ArrayList<Attendee>();
     attendees.add(new Attendee("foo", "foo@gmail.com", null));
@@ -45,5 +40,9 @@ public class MockAttendeeRetriever implements AttendeeRetriever {
     attendees.add(new Attendee("alf", "alf@gmail.com", null));
     attendees.add(new Attendee("nic", "nic@gmail.com", null));
     return attendees;
+  }
+
+  public Attendee getCurrentUser() {
+    return new Attendee("Nicolas Garnier", "nivco@google.com", null);
   }
 }
