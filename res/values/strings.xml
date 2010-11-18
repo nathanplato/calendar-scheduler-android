@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="select_participants_caption">Select the participants to your meeting.</string>
+    <string name="select_participants_caption">Select the participants to your meeting</string>
+    <string name="select_meeting_time_caption">Available meeting times...</string>
     <string name="app_name">Meeting Scheduler</string>
     <string name="settings_text">Settings: 1h meeting\nOver the next week\nNo working hours consideration</string>
     <string name="find_meeting_button">Find meetings</string>

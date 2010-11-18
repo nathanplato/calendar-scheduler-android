@@ -1,16 +1,18 @@
 
 package com.google.android.apps.meetingscheduler;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
+
+import java.io.NotSerializableException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Activity Screen where the user selects the meeting attendees.
@@ -24,8 +26,7 @@ public class SelectParticipantsActivity extends Activity {
   private AttendeeRetriever attendeeRetriever = new MockAttendeeRetriever();
 
   /** List of widgets used to select attendees */
-  private List<SelectableAttendeeWidget> selectableAttendeeWidgets =
-      new ArrayList<SelectableAttendeeWidget>();
+  private List<SelectableAttendeeWidget> selectableAttendeeWidgets = new ArrayList<SelectableAttendeeWidget>();
 
   /** Called when the activity is first created. */
   @Override
@@ -34,11 +35,12 @@ public class SelectParticipantsActivity extends Activity {
     final boolean customTitleSupported = requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
 
     // Creating main layout
-    setContentView(R.layout.main);
+    setContentView(R.layout.select_participants);
 
     // Custom title bar
     if (customTitleSupported) {
-      getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.app_title);
+      getWindow()
+          .setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.app_title_select_participants);
     }
 
     // Adding selectable attendees
@@ -53,7 +55,20 @@ public class SelectParticipantsActivity extends Activity {
     findMeetingButton.setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
         List<Attendee> selectedAttendees = getSelectedAttendees();
-        if(selectedAttendees.size() > 0) {
+        if (selectedAttendees.size() > 0) {
+          Log.i("Meeting Scheduler",
+              "Find meeting button pressed - about to launch SelectMeeting activity");
+          // the results are called on widgetActivityCallback
+          try {
+            startActivity(SelectMeetingTimeActivity.createViewIntent(getApplicationContext(),
+                selectedAttendees));
+
+          } catch (NotSerializableException e) {
+            Log.e("Meeting Scheduler", "Intent isnot run because of a NotSerializableException. "
+                + "Probably the selectedAttendees list which is not serializable.");
+          }
+          Log.i("Meeting Scheduler",
+              "Find meeting button pressed - successfully launched SelectMeeting activity");
 
         }
       }

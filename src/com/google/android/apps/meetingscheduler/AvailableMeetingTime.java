@@ -17,45 +17,43 @@
 package com.google.android.apps.meetingscheduler;
 
 import java.io.Serializable;
-
-import android.widget.ImageView;
+import java.util.Date;
+import java.util.List;
 
 /**
- * Represent an attendee or a potential attendee to a meeting.
+ * Selectable Attendee List item.
  *
  * @since 2.2
  * @author Nicolas Garnier (nivco@google.com)
  */
-public class Attendee implements Serializable{
+public class AvailableMeetingTime implements Serializable {
 
-  /** For serialization purposes */
+  /** For Serialization purposes */
   private static final long serialVersionUID = 1L;
 
-  /** Photo of the participant */
-  public ImageView photo;
+  /** The start time of the event */
+  public Date start;
 
-  /** Display name of the participant */
-  public String name;
+  /** The end time of the event */
+  public Date End;
 
-  /** email of the calendar of the participant */
-  public String email;
+  /** The list of attendees to the event */
+  public List<Attendee> attendees;
 
   /**
    * Default Constructor.
    */
-  public Attendee() {
+  public AvailableMeetingTime(){
   }
 
   /**
-   * Constructor that initializes the attributes.
+   * Constructor which initializes the start and end Date.
    *
-   * @param name The name of the attendee
-   * @param email The email of the calendar of the attendee
-   * @param photo The photo of the attendee
+   * @param start The Start date of the event
+   * @param end The End date of the event
    */
-  public Attendee(String name, String email, ImageView photo){
-    this.name = name;
-    this.email = email;
-    this.photo = photo;
+  public AvailableMeetingTime(Date start, Date end){
+    this.start = start;
+    this.End = end;
   }
 }
