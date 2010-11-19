@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Mock Attendee Retriever just returns a list of attendees manually build for
  * testing.
- *
+ * 
  * @since 2.2
  * @author Nicolas Garnier (nivco@google.com)
  */

@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * Allows the retrieval of attendees.
- *
+ * 
  * @since 2.2
  * @author Nicolas Garnier (nivco@google.com)
  */
@@ -28,14 +28,14 @@ public interface AttendeeRetriever {
 
   /**
    * Returns the list of attendees selectable.
-   *
+   * 
    * @return The list of selectable attendees
    */
   public List<Attendee> getPossibleAttendees();
 
   /**
    * Returns the current user of the phone as an attendee.
-   *
+   * 
    * @return the current user of the phone as an attendee
    */
   public Attendee getCurrentUser();

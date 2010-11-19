@@ -5,18 +5,19 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.ListView;
 
 import java.io.NotSerializableException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Activity Screen where the user selects the meeting attendees.
- *
+ * 
  * @since 2.2
  * @author Nicolas Garnier (nivco@google.com)
  */
@@ -26,7 +27,10 @@ public class SelectParticipantsActivity extends Activity {
   private AttendeeRetriever attendeeRetriever = new MockAttendeeRetriever();
 
   /** List of widgets used to select attendees */
-  private List<SelectableAttendeeWidget> selectableAttendeeWidgets = new ArrayList<SelectableAttendeeWidget>();
+  private List<Attendee> attendees = new ArrayList<Attendee>();
+
+  /** ArrayAdapter for the attendees */
+  private SelectableAttendeeAdapter attendeeAdapter;
 
   /** Called when the activity is first created. */
   @Override
@@ -44,11 +48,12 @@ public class SelectParticipantsActivity extends Activity {
     }
 
     // Adding selectable attendees
-    selectableAttendeeWidgets = createSelectableAttendeeWidgetList();
-    LinearLayout attendeeListContainer = (LinearLayout) findViewById(R.id.attendee_list);
-    for (SelectableAttendeeWidget widget : selectableAttendeeWidgets) {
-      attendeeListContainer.addView(widget);
-    }
+    attendees = attendeeRetriever.getPossibleAttendees();
+    Collections.sort(attendees, new AttendeeComparator());
+
+    attendeeAdapter = new SelectableAttendeeAdapter(this, R.layout.selectable_attendee, attendees);
+    ListView attendeeListView = (ListView) findViewById(R.id.attendee_list);
+    attendeeListView.setAdapter(attendeeAdapter);
 
     // Adding action to the button
     Button findMeetingButton = (Button) findViewById(R.id.find_time_button);
@@ -69,7 +74,6 @@ public class SelectParticipantsActivity extends Activity {
           }
           Log.i("Meeting Scheduler",
               "Find meeting button pressed - successfully launched SelectMeeting activity");
-
         }
       }
     });
@@ -77,34 +81,17 @@ public class SelectParticipantsActivity extends Activity {
 
   /**
    * Returns the list of currently selected attendees.
-   *
+   * 
    * @return the list of currently selected attendees
    */
   private List<Attendee> getSelectedAttendees() {
     List<Attendee> selectedAttendees = new ArrayList<Attendee>();
-    for (SelectableAttendeeWidget widget : selectableAttendeeWidgets) {
-      if (widget.isSelected()) {
-        selectedAttendees.add(widget.getAttendee());
-      }
+
+    for (Attendee attendee : attendees) {
+      if (attendee.selected)
+        selectedAttendees.add(attendee);
     }
     return selectedAttendees;
   }
 
-  /**
-   * Returns the list of selectable attendees widgets.
-   *
-   * @returns the list of selectable attendees widgets.
-   */
-  private List<SelectableAttendeeWidget> createSelectableAttendeeWidgetList() {
-    List<SelectableAttendeeWidget> selectableAttendeeWidgets = new ArrayList<SelectableAttendeeWidget>();
-    SelectableAttendeeWidget currentUser = new SelectableAttendeeWidget(attendeeRetriever
-        .getCurrentUser(), getApplicationContext());
-    currentUser.setSelected(true);
-    selectableAttendeeWidgets.add(currentUser);
-    for (Attendee attendee : attendeeRetriever.getPossibleAttendees()) {
-      selectableAttendeeWidgets
-          .add(new SelectableAttendeeWidget(attendee, getApplicationContext()));
-    }
-    return selectableAttendeeWidgets;
-  }
 }
