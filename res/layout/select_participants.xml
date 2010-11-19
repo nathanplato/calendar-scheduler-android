@@ -2,13 +2,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
+	<EditText android:id="@+id/filter"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"
+		android:hint="Type to filter contacts" />
 	<ListView android:id="@+id/attendee_list"
 		android:layout_width="fill_parent" android:layout_height="fill_parent"
 		android:layout_gravity="center_horizontal"
 		android:layout_weight="1"
-		android:orientation="vertical"
-		>
-	</ListView>
+		android:orientation="vertical" />
 	<LinearLayout android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:paddingTop="8px"
 		android:paddingBottom="0px" android:paddingLeft="5px"

@@ -3,11 +3,15 @@ package com.google.android.apps.meetingscheduler;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Filter.FilterListener;
 import android.widget.ListView;
 
 import java.io.NotSerializableException;
@@ -52,8 +56,37 @@ public class SelectParticipantsActivity extends Activity {
     Collections.sort(attendees, new AttendeeComparator());
 
     attendeeAdapter = new SelectableAttendeeAdapter(this, R.layout.selectable_attendee, attendees);
+
     ListView attendeeListView = (ListView) findViewById(R.id.attendee_list);
     attendeeListView.setAdapter(attendeeAdapter);
+
+    // Adding listener to the EditText filter.
+    EditText editText = (EditText) findViewById(R.id.filter);
+
+    editText.addTextChangedListener(new TextWatcher() {
+      @Override
+      public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+        attendeeAdapter.getFilter().filter(s, new FilterListener() {
+          @Override
+          public void onFilterComplete(int count) {
+            AttendeeComparator comparator = new AttendeeComparator();
+
+            attendeeAdapter.sort(comparator);
+            attendeeAdapter.notifyDataSetChanged();
+          }
+        });
+
+      }
+
+      @Override
+      public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+      }
+
+      @Override
+      public void afterTextChanged(Editable s) {
+      }
+    });
 
     // Adding action to the button
     Button findMeetingButton = (Button) findViewById(R.id.find_time_button);

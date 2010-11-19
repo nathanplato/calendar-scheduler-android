@@ -20,7 +20,9 @@
 		<CheckBox android:id="@+id/attendee_checkbox" 
 			android:layout_width="wrap_content" 
 			android:layout_height="wrap_content" 
-			android:layout_gravity="right"/> 
+			android:layout_gravity="right"
+			android:clickable="false"
+			android:focusable="false"/> 
   </LinearLayout>
   <LinearLayout android:background="@color/selectable_attendee_border" 
   	android:layout_width="fill_parent" 

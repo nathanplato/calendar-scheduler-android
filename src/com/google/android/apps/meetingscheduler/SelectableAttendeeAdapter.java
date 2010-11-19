@@ -18,10 +18,12 @@ import java.util.List;
 public class SelectableAttendeeAdapter extends ArrayAdapter<Attendee> {
 
   private int resource;
+  private List<Attendee> attendees;
 
   public SelectableAttendeeAdapter(Context context, int resource, List<Attendee> items) {
     super(context, resource, items);
     this.resource = resource;
+    attendees = items;
   }
 
   @Override
@@ -46,10 +48,12 @@ public class SelectableAttendeeAdapter extends ArrayAdapter<Attendee> {
     attendeeView.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
+        System.err.println("+++++++++++++++ CLICK ++++++++++++++++");
         Attendee attendee = (Attendee) v.getTag();
+        AttendeeComparator comparator = new AttendeeComparator();
 
         attendee.selected = !attendee.selected;
-        adapter.sort(new AttendeeComparator());
+        adapter.sort(comparator);
         adapter.notifyDataSetChanged();
       }
     });
@@ -60,7 +64,8 @@ public class SelectableAttendeeAdapter extends ArrayAdapter<Attendee> {
 
     nameView.setText(item.name);
 
-    // TODO(alainv): Change this or use other type to store attendee's photo.
+    // TODO(alainv): Change this or use other type to store attendee's photo,
+    // e.g URI?.
     if (item.photo == null) {
       photoView.setImageResource(R.drawable.attendee_icon);
     } else {

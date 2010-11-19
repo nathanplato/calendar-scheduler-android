@@ -16,9 +16,9 @@
 
 package com.google.android.apps.meetingscheduler;
 
-import java.io.Serializable;
-
 import android.widget.ImageView;
+
+import java.io.Serializable;
 
 /**
  * Represent an attendee or a potential attendee to a meeting.
@@ -26,7 +26,7 @@ import android.widget.ImageView;
  * @since 2.2
  * @author Nicolas Garnier (nivco@google.com)
  */
-public class Attendee implements Serializable{
+public class Attendee implements Serializable {
 
   /** For serialization purposes */
   private static final long serialVersionUID = 1L;
