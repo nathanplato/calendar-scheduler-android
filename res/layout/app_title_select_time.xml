@@ -15,10 +15,10 @@
 		<TextView android:layout_width="fill_parent"
 			style="?android:attr/windowTitleStyle" android:layout_height="0dip"
 			android:layout_weight="1" android:textColor="#FFF" android:text="@string/app_name"
-			android:textSize="16dip" />
+			android:textSize="16sp" />
 		<TextView android:layout_width="fill_parent"
 			android:layout_height="0dip" android:layout_weight="1" style="?android:attr/windowTitleStyle"
-			android:textColor="#FFF" android:textSize="12dip" android:textStyle="normal" android:ellipsize="marquee"
+			android:textColor="#FFF" android:textSize="12sp" android:textStyle="normal" android:ellipsize="marquee"
 			android:singleLine="true" android:text="@string/select_meeting_time_caption" />
 	</LinearLayout>
 </LinearLayout>

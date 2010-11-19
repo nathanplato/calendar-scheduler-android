@@ -5,4 +5,6 @@
     <string name="app_name">Meeting Scheduler</string>
     <string name="settings_text">Settings: 1h meeting\nOver the next week\nNo working hours consideration</string>
     <string name="find_meeting_button">Find meetings</string>
+    <string name="create_button">Create event</string>
+    <string name="find_more_button">Find more times...</string>
 </resources>

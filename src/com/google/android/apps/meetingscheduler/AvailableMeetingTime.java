@@ -26,7 +26,7 @@ import java.util.List;
  * @since 2.2
  * @author Nicolas Garnier (nivco@google.com)
  */
-public class AvailableMeetingTime implements Serializable {
+public class AvailableMeetingTime implements Serializable, Comparable<AvailableMeetingTime> {
 
   /** For Serialization purposes */
   private static final long serialVersionUID = 1L;
@@ -35,7 +35,7 @@ public class AvailableMeetingTime implements Serializable {
   public Date start;
 
   /** The end time of the event */
-  public Date End;
+  public Date end;
 
   /** The list of attendees to the event */
   public List<Attendee> attendees;
@@ -54,6 +54,28 @@ public class AvailableMeetingTime implements Serializable {
    */
   public AvailableMeetingTime(Date start, Date end){
     this.start = start;
-    this.End = end;
+    this.end = end;
+  }
+
+  /**
+   * Constructor which initializes the start and end Date.
+   *
+   * @param start The Start date of the event
+   * @param end The End date of the event
+   * @param attendees The Attendees that are available for the meeting
+   */
+  public AvailableMeetingTime(Date start, Date end, List<Attendee> attendees){
+    this.start = start;
+    this.end = end;
+    this.attendees = attendees;
+  }
+
+  public int compareTo(AvailableMeetingTime another) {
+    int compare = start.compareTo(another.start);
+    if(compare == 0) {
+      return end.compareTo(another.end);
+    } else {
+      return compare;
+    }
   }
 }

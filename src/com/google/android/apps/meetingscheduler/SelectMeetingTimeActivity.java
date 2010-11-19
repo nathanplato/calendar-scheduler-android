@@ -8,22 +8,15 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Window;
 import android.widget.ExpandableListView;
-import android.widget.LinearLayout;
 
 import java.io.NotSerializableException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Activity Screen where the user selects the meeting time betweent he meeting
  * times proposed.
  *
- * @since 2.2
  * @author Nicolas Garnier (nivco@google.com)
  */
 public class SelectMeetingTimeActivity extends Activity {
@@ -31,15 +24,20 @@ public class SelectMeetingTimeActivity extends Activity {
   /** The constant to store the selectedAttendees list in an intent */
   private static final String SELECTED_ATTENDEES = "SELECTED_ATTENDEES";
 
-  /** The list of selected Attendees */
-  private List<Attendee> selectedAttendees;
+  /** The application settings */
+  // TODO: Change this so it is saved in memory and also add a settings
+  // configuration page.
+  private Settings settings = new Settings();
+
+  /** The application settings */
+  // TODO: Change this to a fully-working not mock implementation
+  private EventTimeRetriever eventTimeRetriever = new MockEventTimeRetriever();
 
   /** Called when the activity is first created. */
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     final boolean customTitleSupported = requestWindowFeature(Window.FEATURE_CUSTOM_TITLE);
-    Log.i("Meeting Scheduler", "OKOK");
 
     // Creating main layout
     setContentView(R.layout.select_meeting_time);
@@ -49,42 +47,21 @@ public class SelectMeetingTimeActivity extends Activity {
       getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.app_title_select_time);
     }
 
-    // Getting the selectedAttendees list
+    // Getting the selectedAttendees list from the intent
     final Intent intent = getIntent();
     @SuppressWarnings("unchecked")
     List<Attendee> selectedAttendees = (List<Attendee>) intent
         .getSerializableExtra(SELECTED_ATTENDEES);
-    this.selectedAttendees = selectedAttendees;
+
+    // Calculating the available meeting times from the selectedAttendees and
+    // the settings
+    List<AvailableMeetingTime> availableMeetingTimes = eventTimeRetriever.getAvailableMeetingTime(
+        selectedAttendees, settings);
 
     // Adding the available meeting times to the UI
-    LinearLayout meetingListContainer = (LinearLayout) findViewById(R.id.meeting_list);
-    Map<Date, List<AvailableMeetingTime>> availableMeetingTimeWidgets = createAvailableMeetingTimeWidgets();
-    List<Date> sortedDatesWithMeetings = asSortedList(availableMeetingTimeWidgets.keySet());
-    for (Date date : sortedDatesWithMeetings) {
-      ExpandableListView dateContainer = new ExpandableListView(getApplicationContext());
-      meetingListContainer.addView(dateContainer);
-    }
+    ExpandableListView meetingListContainer = (ExpandableListView) findViewById(R.id.meeting_list);
+    meetingListContainer.setAdapter(new EventExpandableListAdapter(this, availableMeetingTimes));
 
-  }
-
-  /**
-   * Sort a Collection based on its default comparator.
-   *
-   * @param c The collection to sort
-   * @return The sorted collection as a List
-   */
-  public static <T extends Comparable<? super T>> List<T> asSortedList(Collection<T> c) {
-    List<T> list = new ArrayList<T>(c);
-    java.util.Collections.sort(list);
-    return list;
-  }
-
-  /**
-   * @return
-   */
-  private Map<Date, List<AvailableMeetingTime>> createAvailableMeetingTimeWidgets() {
-    // TODO Auto-generated method stub
-    return new HashMap<Date, List<AvailableMeetingTime>>();
   }
 
   /**

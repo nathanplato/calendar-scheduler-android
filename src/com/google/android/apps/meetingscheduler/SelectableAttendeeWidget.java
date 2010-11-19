@@ -49,6 +49,7 @@ public class SelectableAttendeeWidget extends LinearLayout {
     LinearLayout horizontalLayout = new LinearLayout(context);
     LayoutParams lpHl = new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT);
     horizontalLayout.setLayoutParams(lpHl);
+    setPadding(0, 0, 5, 0);
     addView(horizontalLayout);
 
     // Adding the Photo
