@@ -48,12 +48,10 @@ public class SelectableAttendeeAdapter extends ArrayAdapter<Attendee> {
     attendeeView.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
-        System.err.println("+++++++++++++++ CLICK ++++++++++++++++");
         Attendee attendee = (Attendee) v.getTag();
-        AttendeeComparator comparator = new AttendeeComparator();
 
         attendee.selected = !attendee.selected;
-        adapter.sort(comparator);
+        adapter.sort(AttendeeComparator.Comparator);
         adapter.notifyDataSetChanged();
       }
     });

@@ -53,7 +53,7 @@ public class SelectParticipantsActivity extends Activity {
 
     // Adding selectable attendees
     attendees = attendeeRetriever.getPossibleAttendees();
-    Collections.sort(attendees, new AttendeeComparator());
+    Collections.sort(attendees, AttendeeComparator.Comparator);
 
     attendeeAdapter = new SelectableAttendeeAdapter(this, R.layout.selectable_attendee, attendees);
 
@@ -70,9 +70,7 @@ public class SelectParticipantsActivity extends Activity {
         attendeeAdapter.getFilter().filter(s, new FilterListener() {
           @Override
           public void onFilterComplete(int count) {
-            AttendeeComparator comparator = new AttendeeComparator();
-
-            attendeeAdapter.sort(comparator);
+            attendeeAdapter.sort(AttendeeComparator.Comparator);
             attendeeAdapter.notifyDataSetChanged();
           }
         });
