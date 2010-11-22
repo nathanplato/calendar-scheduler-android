@@ -152,6 +152,9 @@ public class EventExpandableListAdapter extends BaseExpandableListAdapter {
     Button button = (Button) view.findViewById(R.id.meeting_time_create_button);
     button.setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
+        // TODO: fire an intent of the Google Calendar App to create an event.
+        //       If the Calendar App is not installed fire the intent below
+        //       which redirects to the Web UI to create an event.
         String attendeesEmails = attendees.get(0).email;
         for (int i = 1; i < attendees.size(); i++) {
           attendeesEmails += "," + attendees.get(i).email;
@@ -159,14 +162,9 @@ public class EventExpandableListAdapter extends BaseExpandableListAdapter {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-        String createEventUrl = "https://www.google.com/calendar/render?"
-            + "action=TEMPLATE"
-            + "&dates=" + sdf.format(startDate) + "/" + sdf.format(endDate)
-            + "&add=" + attendeesEmails
-            + "&crm=BUSY"
-            + "&gsessionid=OK"
-            + "&sf=true"
-            + "&output=xml";
+        String createEventUrl = "https://www.google.com/calendar/render?" + "action=TEMPLATE"
+            + "&dates=" + sdf.format(startDate) + "/" + sdf.format(endDate) + "&add="
+            + attendeesEmails + "&crm=BUSY" + "&gsessionid=OK" + "&sf=true" + "&output=xml";
         Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse(createEventUrl));
 
         context.startActivity(browse);
