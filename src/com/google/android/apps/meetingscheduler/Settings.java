@@ -27,7 +27,7 @@ public class Settings {
   public int meetingLength = 60;
 
   /** How long in the future do we have to look for in days */
-  public int TimeSpan = 7;
+  public int timeSpan = 7;
 
   /**
    * True if we need to take into consideration some working hours instead of
@@ -36,15 +36,26 @@ public class Settings {
   public boolean useWorkingHours = false;
 
   /**
+   * True if don't return results on weekend.
+   */
+  public boolean skipWeekends = true;
+
+  /**
    * True if we should use the Google Calendar working hour setting of each
    * participant or false if we should just use the times manually set.
    */
   public boolean useWorkingHoursSetting = false;
 
-  /** Time the working hours start in hours from midnight (0=midnight) */
+  /**
+   * Time the working hours start in hours from midnight (0=midnight, 9.5 =
+   * 9:30am, 23 = 11pm)
+   */
   public double workingHoursStart = 9;
 
-  /** Time the working hours end in hours from midnight (0=midnight) */
+  /**
+   * Time the working hours end in hours from midnight (0=midnight), 9.5 =
+   * 9:30am, 23 = 11pm)
+   */
   public double workingHoursEnd = 18;
 
 }
