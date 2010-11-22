@@ -23,8 +23,7 @@ import java.util.List;
 /**
  * Selectable Attendee List item.
  *
- * @since 2.2
- * @author Nicolas Garnier (nivco@google.com)
+ * @author Nicolas Garnier
  */
 public class AvailableMeetingTime implements Serializable, Comparable<AvailableMeetingTime> {
 

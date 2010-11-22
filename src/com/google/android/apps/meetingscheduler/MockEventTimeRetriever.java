@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Retrieves fake available meeting time for testing purposes.
  *
- * @author Nicolas Garnier (nivco@google.com)
+ * @author Nicolas Garnier
  */
 public class MockEventTimeRetriever implements EventTimeRetriever {
 

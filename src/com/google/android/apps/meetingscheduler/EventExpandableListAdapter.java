@@ -42,7 +42,7 @@ import java.util.TimeZone;
 /**
  * Adapts the Meeting data to the ExpendableListView.
  *
- * @author Nicolas Garnier (nivco@google.com)
+ * @author Nicolas Garnier
  */
 public class EventExpandableListAdapter extends BaseExpandableListAdapter {
 

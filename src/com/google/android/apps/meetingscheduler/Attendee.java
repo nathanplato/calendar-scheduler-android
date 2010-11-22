@@ -22,9 +22,8 @@ import java.io.Serializable;
 
 /**
  * Represent an attendee or a potential attendee to a meeting.
- * 
- * @since 2.2
- * @author Nicolas Garnier (nivco@google.com)
+ *
+ * @author Nicolas Garnier
  */
 public class Attendee implements Serializable {
 
@@ -51,7 +50,7 @@ public class Attendee implements Serializable {
 
   /**
    * Constructor that initializes the attributes.
-   * 
+   *
    * @param name The name of the attendee
    * @param email The email of the calendar of the attendee
    * @param photo The photo of the attendee

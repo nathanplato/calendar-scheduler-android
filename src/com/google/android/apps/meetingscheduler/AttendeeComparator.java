@@ -3,6 +3,7 @@ package com.google.android.apps.meetingscheduler;
 
 import java.util.Comparator;
 
+// TODO(alainv): Write Javadoc for this class
 public class AttendeeComparator implements Comparator<Attendee> {
 
   public static final AttendeeComparator Comparator = new AttendeeComparator();

@@ -31,8 +31,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 /**
  * Selectable Attendee List item.
  *
- * @since 2.2
- * @author Nicolas Garnier (nivco@google.com)
+ * @author Nicolas Garnier
  */
 public class SelectableAttendeeWidget extends LinearLayout {
 

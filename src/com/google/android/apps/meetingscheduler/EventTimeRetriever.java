@@ -21,8 +21,7 @@ import java.util.List;
 /**
  * Allows the retrieval of available meeting times.
  *
- * @since 2.2
- * @author Nicolas Garnier (nivco@google.com)
+ * @author Nicolas Garnier
  */
 public interface EventTimeRetriever {
 

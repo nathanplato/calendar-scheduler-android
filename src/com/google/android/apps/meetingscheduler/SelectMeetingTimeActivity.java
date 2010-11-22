@@ -14,10 +14,10 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * Activity Screen where the user selects the meeting time betweent he meeting
+ * Activity Screen where the user selects the meeting time between the meeting
  * times proposed.
  *
- * @author Nicolas Garnier (nivco@google.com)
+ * @author Nicolas Garnier
  */
 public class SelectMeetingTimeActivity extends Activity {
 
@@ -26,11 +26,12 @@ public class SelectMeetingTimeActivity extends Activity {
 
   /** The application settings */
   // TODO: Change this so it is saved in memory and also add a settings
-  // configuration page.
+  //       configuration page accessible by the menu.
   private Settings settings = new Settings();
 
   /** The application settings */
-  // TODO: Change this to a fully-working not mock implementation
+  // TODO: Change this to a fully-working not mock implementation, if this needs
+  //       asynchronous calls we should probably use an AsyncTask
   private EventTimeRetriever eventTimeRetriever = new MockEventTimeRetriever();
 
   /** Called when the activity is first created. */

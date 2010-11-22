@@ -19,8 +19,7 @@ package com.google.android.apps.meetingscheduler;
 /**
  * Settings and configuration for the Meeting Scheduler
  *
- * @since 2.2
- * @author Nicolas Garnier (nivco@google.com)
+ * @author Nicolas Garnier
  */
 public class Settings {
 

@@ -9,8 +9,10 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Filter.FilterListener;
 import android.widget.ListView;
 
@@ -21,16 +23,17 @@ import java.util.List;
 
 /**
  * Activity Screen where the user selects the meeting attendees.
- * 
- * @since 2.2
- * @author Nicolas Garnier (nivco@google.com)
+ *
+ * @author Nicolas Garnier
  */
 public class SelectParticipantsActivity extends Activity {
 
   /** The Attendee Retriever */
+  // TODO: Change this to a fully-working not mock implementation, if this needs
+  //       asynchronous calls we should probably use an AsyncTask
   private AttendeeRetriever attendeeRetriever = new MockAttendeeRetriever();
 
-  /** List of widgets used to select attendees */
+  /** List of attendees that are selectable */
   private List<Attendee> attendees = new ArrayList<Attendee>();
 
   /** ArrayAdapter for the attendees */
@@ -55,10 +58,21 @@ public class SelectParticipantsActivity extends Activity {
     attendees = attendeeRetriever.getPossibleAttendees();
     Collections.sort(attendees, AttendeeComparator.Comparator);
 
-    attendeeAdapter = new SelectableAttendeeAdapter(this, R.layout.selectable_attendee, attendees);
+    attendeeAdapter = new SelectableAttendeeAdapter(this, attendees);
 
     ListView attendeeListView = (ListView) findViewById(R.id.attendee_list);
     attendeeListView.setAdapter(attendeeAdapter);
+
+    // Adding click event to attendees Widgets
+    attendeeListView.setOnItemClickListener(new OnItemClickListener() {
+      @Override
+      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Attendee attendee = (Attendee)view.getTag();
+        attendee.selected = !attendee.selected;
+        attendeeAdapter.sort(AttendeeComparator.Comparator);
+        attendeeAdapter.notifyDataSetChanged();
+      }
+    });
 
     // Adding listener to the EditText filter.
     EditText editText = (EditText) findViewById(R.id.filter);
@@ -66,7 +80,6 @@ public class SelectParticipantsActivity extends Activity {
     editText.addTextChangedListener(new TextWatcher() {
       @Override
       public void onTextChanged(CharSequence s, int start, int before, int count) {
-
         attendeeAdapter.getFilter().filter(s, new FilterListener() {
           @Override
           public void onFilterComplete(int count) {
@@ -112,7 +125,7 @@ public class SelectParticipantsActivity extends Activity {
 
   /**
    * Returns the list of currently selected attendees.
-   * 
+   *
    * @return the list of currently selected attendees
    */
   private List<Attendee> getSelectedAttendees() {
