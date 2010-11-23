@@ -10,27 +10,26 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Filter.FilterListener;
 import android.widget.ListView;
 
 import java.io.NotSerializableException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Activity Screen where the user selects the meeting attendees.
- *
+ * 
  * @author Nicolas Garnier
  */
 public class SelectParticipantsActivity extends Activity {
 
   /** The Attendee Retriever */
   // TODO: Change this to a fully-working not mock implementation, if this needs
-  //       asynchronous calls we should probably use an AsyncTask
+  // asynchronous calls we should probably use an AsyncTask
   private AttendeeRetriever attendeeRetriever = new MockAttendeeRetriever();
 
   /** List of attendees that are selectable */
@@ -55,51 +54,19 @@ public class SelectParticipantsActivity extends Activity {
     }
 
     // Adding selectable attendees
-    attendees = attendeeRetriever.getPossibleAttendees();
-    Collections.sort(attendees, AttendeeComparator.Comparator);
-
-    attendeeAdapter = new SelectableAttendeeAdapter(this, attendees);
-
-    ListView attendeeListView = (ListView) findViewById(R.id.attendee_list);
-    attendeeListView.setAdapter(attendeeAdapter);
-
-    // Adding click event to attendees Widgets
-    attendeeListView.setOnItemClickListener(new OnItemClickListener() {
-      @Override
-      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Attendee attendee = (Attendee)view.getTag();
-        attendee.selected = !attendee.selected;
-        attendeeAdapter.sort(AttendeeComparator.Comparator);
-        attendeeAdapter.notifyDataSetChanged();
-      }
-    });
+    retrieveAttendee();
 
     // Adding listener to the EditText filter.
-    EditText editText = (EditText) findViewById(R.id.filter);
-
-    editText.addTextChangedListener(new TextWatcher() {
-      @Override
-      public void onTextChanged(CharSequence s, int start, int before, int count) {
-        attendeeAdapter.getFilter().filter(s, new FilterListener() {
-          @Override
-          public void onFilterComplete(int count) {
-            attendeeAdapter.sort(AttendeeComparator.Comparator);
-            attendeeAdapter.notifyDataSetChanged();
-          }
-        });
-
-      }
-
-      @Override
-      public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-      }
-
-      @Override
-      public void afterTextChanged(Editable s) {
-      }
-    });
+    addEditTextListener();
 
     // Adding action to the button
+    addFindMeetingButtonListener();
+  }
+
+  /**
+   * Add the OnClckListner to the findMeetingButton.
+   */
+  private void addFindMeetingButtonListener() {
     Button findMeetingButton = (Button) findViewById(R.id.find_time_button);
     findMeetingButton.setOnClickListener(new OnClickListener() {
       public void onClick(View v) {
@@ -124,8 +91,71 @@ public class SelectParticipantsActivity extends Activity {
   }
 
   /**
+   * Populate the list of attendees into the activity's ListView.
+   */
+  private void setAttendeeListView() {
+    ListView attendeeListView = (ListView) findViewById(R.id.attendee_list);
+
+    attendeeAdapter = new SelectableAttendeeAdapter(this, attendees);
+    attendeeAdapter.sort();
+
+    attendeeListView.setAdapter(attendeeAdapter);
+
+    // Adding click event to attendees Widgets
+    attendeeListView.setOnItemClickListener(new OnItemClickListener() {
+      @Override
+      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Attendee attendee = attendeeAdapter.getItem(position);
+        attendee.selected = !attendee.selected;
+        attendeeAdapter.sort();
+      }
+    });
+  }
+
+  /**
+   * Retrieve the list of attendees.
+   */
+  private void retrieveAttendee() {
+    attendees = attendeeRetriever.getPossibleAttendees();
+
+    // TODO: might need to move this in the asynchronous call's callback.
+    setAttendeeListView();
+  }
+
+  /**
+   * Add on text changed listener to filter the attendee list view.
+   */
+  private void addEditTextListener() {
+    EditText editText = (EditText) findViewById(R.id.filter);
+
+    editText.addTextChangedListener(new TextWatcher() {
+      @Override
+      public void onTextChanged(CharSequence s, int start, int before, int count) {
+        attendeeAdapter.getFilter().filter(s, new FilterListener() {
+          @Override
+          /**
+           * Sort the array once the filter has been completed.
+           */
+          public void onFilterComplete(int count) {
+            attendeeAdapter.sort();
+          }
+        });
+
+      }
+
+      @Override
+      public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+      }
+
+      @Override
+      public void afterTextChanged(Editable s) {
+      }
+    });
+  }
+
+  /**
    * Returns the list of currently selected attendees.
-   *
+   * 
    * @return the list of currently selected attendees
    */
   private List<Attendee> getSelectedAttendees() {
