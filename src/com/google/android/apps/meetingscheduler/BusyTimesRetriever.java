@@ -22,9 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TODO(alainv) Write type description
+ * Allows the retrieval of busy times.
  * 
- * @since 2.2
  * @author Alain Vongsouvanh (alainv@google.com)
  */
 public interface BusyTimesRetriever {

@@ -30,19 +30,31 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TODO(alainv) Write type description
+ * Compute the common free times from the busy times fetched from the
+ * BusyTimesRetriever.
  * 
- * @since 2.2
  * @author Alain Vongsouvanh (alainv@google.com)
  */
 public class CommonFreeTimesRetriever implements EventTimeRetriever {
 
+  /**
+   * The BusyTimesRetriever from which to retrieve the busy time.
+   */
   private BusyTimesRetriever busyTimeRetriever;
 
+  /**
+   * Default constructor. Use default BusyTimesRetriever.
+   */
   public CommonFreeTimesRetriever() {
     // TODO(alainv): Set default busyTimeRetriever.
   }
 
+  /**
+   * Constructor.
+   * 
+   * @param busyTimeRetriever The BusyTimesRetriever to use for fetching busy
+   *          times.
+   */
   public CommonFreeTimesRetriever(BusyTimesRetriever busyTimeRetriever) {
     this.busyTimeRetriever = busyTimeRetriever;
   }
@@ -70,6 +82,7 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
           getDate(new DateTime(busyTime.getKey().getTime()), settings.workingHoursStart),
           getDate(new DateTime(busyTime.getKey().getTime()), settings.workingHoursEnd),
           settings.meetingLength);
+      addAttendees(availableMeetings, attendees);
 
       result.addAll(availableMeetings);
     }
@@ -77,6 +90,12 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
     return result;
   }
 
+  /**
+   * Sort busy times by date.
+   * 
+   * @param busyTimes The busy times to sort
+   * @return The sorted busy times by date.
+   */
   private Map<Date, List<Busy>> sortBusyTimes(Map<Attendee, List<Busy>> busyTimes) {
     Map<Date, List<Busy>> result;
 
@@ -88,6 +107,12 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
     return result;
   }
 
+  /**
+   * Merge the overlapping busy times, e.g 9:00-10:00 and 10:00-12:00 will
+   * become one 9:00-12:00 busy time.
+   * 
+   * @param busyTimes The busy times to merge.
+   */
   private void mergeBusyTimes(List<Busy> busyTimes) {
     // Merge every busy slots.
     for (int i = 0; i < busyTimes.size(); ++i) {
@@ -106,6 +131,13 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
     }
   }
 
+  /**
+   * Find the available meetings from the list of busy times. The busy times are
+   * considered to be on the same day, sorted and merged.
+   * 
+   * @param busyTimes The busy times from which to compute the available meeting
+   * @return The available meetings time from 00:00 to 23:59 of the same day.
+   */
   private List<AvailableMeetingTime> findAvailableMeetings(List<Busy> busyTimes) {
     List<AvailableMeetingTime> result = new ArrayList<AvailableMeetingTime>();
     AvailableMeetingTime tmp = new AvailableMeetingTime();
@@ -127,6 +159,16 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
     return result;
   }
 
+  /**
+   * Filter the available meetings according to the settings: the meetings
+   * should be between {@code from} and {@code to} and should not last less than @
+   * length} .
+   * 
+   * @param meetings The meetings to filter.
+   * @param from The start time from which to filter meetings.
+   * @param to The end time from which to filter meetings.
+   * @param length The minimum length of the meetings.
+   */
   private void filterAvailableMeetings(List<AvailableMeetingTime> meetings, Date from, Date to,
       int length) {
     filterStartTime(meetings, from);
@@ -135,8 +177,22 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
   }
 
   /**
-   * @param meetings
-   * @param from
+   * Add the list of attendees to the available meetings.
+   * 
+   * @param meetings The meetings to which to add the attendees.
+   * @param attendees The attendees to add to the meetings.
+   */
+  private void addAttendees(List<AvailableMeetingTime> meetings, List<Attendee> attendees) {
+    for (AvailableMeetingTime meeting : meetings) {
+      meeting.attendees = attendees;
+    }
+  }
+
+  /**
+   * Filter the meetings that are before {@code from}.
+   * 
+   * @param meetings The meetings to filter.
+   * @param from The start time from which to filter the meetings.
    */
   private void filterStartTime(List<AvailableMeetingTime> meetings, Date from) {
     while (meetings.size() > 0) {
@@ -153,8 +209,10 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
   }
 
   /**
-   * @param meetings
-   * @param to
+   * Filter the meetings that are after {@code to}.
+   * 
+   * @param meetings The meetings to filter.
+   * @param to The end time from which to filter the meetings.
    */
   private void filterEndTime(List<AvailableMeetingTime> meetings, Date to) {
     while (meetings.size() > 0) {
@@ -171,8 +229,10 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
   }
 
   /**
-   * @param meetings
-   * @param length
+   * Filter the meetings which length are less than {@code length}.
+   * 
+   * @param meetings The meetings to filter.
+   * @param length The minimum length of the meetings.
    */
   private void filterMeetingLength(List<AvailableMeetingTime> meetings, int length) {
     for (int i = 0; i < meetings.size();) {
@@ -186,7 +246,10 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
   }
 
   /**
-   * @param meeting
+   * Compute the length of the {@code meeting} in minutes.
+   * 
+   * @param meeting The meeting from which to compute the length.
+   * @return The length of the meeting in minutes.
    */
   private int getMeetingLength(AvailableMeetingTime meeting) {
     long difference = meeting.end.getTime() - meeting.start.getTime();
@@ -195,9 +258,12 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
   }
 
   /**
-   * @param from
-   * @param first
-   * @param last
+   * Set the first (00:00) and last (23:59) time of the same day as {@code from}
+   * .
+   * 
+   * @param from The date from which to get the day.
+   * @param first The date object on which to set the first time of the day.
+   * @param last The date object on which to set the last time of the day.
    */
   private void setFistAndLast(DateTime from, Date first, Date last) {
     Calendar tmpCalendar = new GregorianCalendar();
@@ -214,7 +280,9 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
   }
 
   /**
-   * @param busyTime
+   * Sort the busy times by start time.
+   * 
+   * @param busyTime The busy times to sort.
    */
   private void sortBusyTime(List<Busy> busyTime) {
     Collections.sort(busyTime, new Comparator<Busy>() {
@@ -229,8 +297,10 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
   }
 
   /**
-   * @param busyTimes
-   * @return
+   * Separate busy times from the same day.
+   * 
+   * @param busyTimes The busy times to sort.
+   * @return The separated busy times.
    */
   private Map<Date, List<Busy>> filterByDate(Map<Attendee, List<Busy>> busyTimes) {
     Map<Date, List<Busy>> result;
@@ -251,6 +321,13 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
     return result;
   }
 
+  /**
+   * Get the current day from {@code time} with the given {@code hourOfDay}.
+   * 
+   * @param time The DateTime object from which to read the day.
+   * @param hourOfDay The hour of day to set in double, e.g 9.5 == 9:30.
+   * @return The computed Date object.
+   */
   private Date getDate(DateTime time, double hourOfDay) {
     Calendar calendar = new GregorianCalendar();
     int hour = (int) hourOfDay;
@@ -266,6 +343,13 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
     return calendar.getTime();
   }
 
+  /**
+   * Compare 2 DateTime objects.
+   * 
+   * @param lhs
+   * @param rhs
+   * @return The comparison of the 2 DateTimes.
+   */
   private int compareDateTime(DateTime lhs, DateTime rhs) {
     return (int) (lhs.value - rhs.value);
   }

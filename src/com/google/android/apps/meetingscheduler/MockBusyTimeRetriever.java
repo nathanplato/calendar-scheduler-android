@@ -26,17 +26,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TODO(alainv) Write type description
+ * Mock Busy Times Retriever just returns a list of busy times manually build
+ * for testing.
  * 
- * @since 2.2
  * @author Alain Vongsouvanh (alainv@google.com)
  */
 public class MockBusyTimeRetriever implements BusyTimesRetriever {
 
   @Override
   public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees, Settings settings) {
-    // TODO Auto-generated method stub
-
     Map<Attendee, List<Busy>> result = new HashMap<Attendee, List<Busy>>();
     List<List<Busy>> mockBusyTimes = getMockBusyTimes();
     int maxSize = mockBusyTimes.size();
@@ -52,6 +50,13 @@ public class MockBusyTimeRetriever implements BusyTimesRetriever {
     return result;
   }
 
+  /**
+   * Create a {@link Busy} object from {@code start} to {@code end}.
+   * 
+   * @param start The start time of the {@link Busy} object.
+   * @param end The end time of the {@link Busy} object.
+   * @return The computed {@link Busy} object.
+   */
   private Busy createBusy(DateTime start, DateTime end) {
     Busy result = new Busy();
 
@@ -62,6 +67,11 @@ public class MockBusyTimeRetriever implements BusyTimesRetriever {
     return result;
   }
 
+  /**
+   * Returns a list of manually created busy times.
+   * 
+   * @return The list of manually created busy times.
+   */
   private List<List<Busy>> getMockBusyTimes() {
     List<List<Busy>> result = new ArrayList<List<Busy>>();
 
