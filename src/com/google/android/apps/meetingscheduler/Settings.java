@@ -18,7 +18,7 @@ package com.google.android.apps.meetingscheduler;
 
 /**
  * Settings and configuration for the Meeting Scheduler
- *
+ * 
  * @author Nicolas Garnier
  */
 public class Settings {
@@ -56,6 +56,6 @@ public class Settings {
    * Time the working hours end in hours from midnight (0=midnight), 9.5 =
    * 9:30am, 23 = 11pm)
    */
-  public double workingHoursEnd = 18;
+  public double workingHoursEnd = 17.5;
 
 }
