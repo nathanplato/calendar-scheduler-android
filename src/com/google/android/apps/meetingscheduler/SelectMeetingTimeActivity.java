@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.Window;
 import android.widget.ExpandableListView;
 
+import com.google.api.data.calendar.v2.CalendarApiInfo;
+
 import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.util.List;
@@ -32,10 +34,14 @@ public class SelectMeetingTimeActivity extends Activity {
   /** The application settings */
   // TODO: Change this to a fully-working not mock implementation, if this needs
   // asynchronous calls we should probably use an AsyncTask
-  private EventTimeRetriever eventTimeRetriever = new CommonFreeTimesRetriever(
-      new MockBusyTimeRetriever());
+  private EventTimeRetriever eventTimeRetriever;
+
+  private List<Attendee> selectedAttendees;
+
+  private AuthManager auth;
 
   /** Called when the activity is first created. */
+  @SuppressWarnings("unchecked")
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -51,19 +57,12 @@ public class SelectMeetingTimeActivity extends Activity {
 
     // Getting the selectedAttendees list from the intent
     final Intent intent = getIntent();
-    @SuppressWarnings("unchecked")
-    List<Attendee> selectedAttendees = (List<Attendee>) intent
-        .getSerializableExtra(SELECTED_ATTENDEES);
+    selectedAttendees = (List<Attendee>) intent.getSerializableExtra(SELECTED_ATTENDEES);
 
-    // Calculating the available meeting times from the selectedAttendees and
-    // the settings
-    List<AvailableMeetingTime> availableMeetingTimes = eventTimeRetriever.getAvailableMeetingTime(
-        selectedAttendees, settings);
+    auth = new AuthManager(this, MeetingSchedulerConstants.GET_LOGIN, null, true,
+        CalendarApiInfo.AUTH_TOKEN_TYPE);
 
-    // Adding the available meeting times to the UI
-    ExpandableListView meetingListContainer = (ExpandableListView) findViewById(R.id.meeting_list);
-    meetingListContainer.setAdapter(new EventExpandableListAdapter(this, availableMeetingTimes));
-
+    authenticate();
   }
 
   /**
@@ -89,4 +88,53 @@ public class SelectMeetingTimeActivity extends Activity {
     intent.setClass(context, SelectMeetingTimeActivity.class);
     return intent;
   }
+
+  @Override
+  public void onActivityResult(int requestCode, int resultCode, final Intent results) {
+    super.onActivityResult(requestCode, resultCode, results);
+    switch (requestCode) {
+    case MeetingSchedulerConstants.GET_LOGIN: {
+      if (resultCode == RESULT_OK && auth != null) {
+        auth.authResult(resultCode, results);
+      }
+      break;
+    }
+    case MeetingSchedulerConstants.AUTHENTICATED: {
+      if (resultCode == RESULT_OK && auth != null)
+        authenticated();
+      break;
+    }
+    }
+  }
+
+  /**
+   * 
+   */
+  private void authenticate() {
+    auth.doLogin(new Runnable() {
+      public void run() {
+        onActivityResult(MeetingSchedulerConstants.AUTHENTICATED, RESULT_OK, null);
+      }
+    }, false);
+
+  }
+
+  private void authenticated() {
+    if (auth.getAuthToken() == null) {
+      authenticate();
+    } else {
+      eventTimeRetriever = new CommonFreeTimesRetriever(new FreeBusyTimesRetriever(
+          auth.getAuthToken()));
+
+      // Calculating the available meeting times from the selectedAttendees and
+      // the settings
+      List<AvailableMeetingTime> availableMeetingTimes = eventTimeRetriever
+          .getAvailableMeetingTime(selectedAttendees, settings);
+
+      // Adding the available meeting times to the UI
+      ExpandableListView meetingListContainer = (ExpandableListView) findViewById(R.id.meeting_list);
+      meetingListContainer.setAdapter(new EventExpandableListAdapter(this, availableMeetingTimes));
+    }
+  }
+
 }

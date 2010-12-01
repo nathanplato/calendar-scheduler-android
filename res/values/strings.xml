@@ -7,4 +7,10 @@
     <string name="find_meeting_button">Find meetings</string>
     <string name="create_button">Create event</string>
     <string name="find_more_button">Find more times...</string>
+<string name="choose_account_title">Choose account</string>
+<string name="ok">OK</string>
+<string name="cancel">Cancel</string>
+<string name="no_account_found_title">No Account Found</string>
+<string name="no_account_found">No account found to use</string>
+
 </resources>

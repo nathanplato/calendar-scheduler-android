@@ -22,22 +22,17 @@ import java.util.List;
 /**
  * Mock Attendee Retriever just returns a list of attendees manually build for
  * testing.
- *
+ * 
  * @author Nicolas Garnier
  */
 public class MockAttendeeRetriever implements AttendeeRetriever {
 
   public List<Attendee> getPossibleAttendees() {
     List<Attendee> attendees = new ArrayList<Attendee>();
-    attendees.add(new Attendee("foo", "foo@gmail.com", null));
-    attendees.add(new Attendee("bar bar bar bar bar bar bar bar bar bar", "bar@gmail.com", null));
-    attendees.add(new Attendee("biz", "biz@gmail.com", null));
-    attendees.add(new Attendee("liz", "liz@gmail.com", null));
-    attendees.add(new Attendee("bob", "bob@gmail.com", null));
-    attendees.add(new Attendee("zob", "zob@gmail.com", null));
-    attendees.add(new Attendee("luc", "luc@gmail.com", null));
-    attendees.add(new Attendee("alf", "alf@gmail.com", null));
-    attendees.add(new Attendee("nic", "nic@gmail.com", null));
+    attendees.add(new Attendee("alainv", "alainv@google.com", null));
+    attendees.add(new Attendee("nivco", "nivco@google.com", null));
+    attendees.add(new Attendee("pying", "pying@google.com", null));
+    attendees.add(new Attendee("prashantt", "prashantt@google.com", null));
     return attendees;
   }
 

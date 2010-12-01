@@ -70,14 +70,16 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
   public List<AvailableMeetingTime> getAvailableMeetingTime(List<Attendee> attendees,
       Settings settings) {
     Map<Attendee, List<Busy>> busyTimes = busyTimeRetriever.getBusyTimes(attendees, settings);
-    Map<Date, List<Busy>> sortedBusyTimes = sortBusyTimes(busyTimes);
+    Map<Date, List<Busy>> sortedBusyTimes = filterByDate(busyTimes);
     List<AvailableMeetingTime> result = new ArrayList<AvailableMeetingTime>();
 
+    addMissingDays(sortedBusyTimes, settings.timeSpan);
     for (Map.Entry<Date, List<Busy>> busyTime : sortedBusyTimes.entrySet()) {
       List<AvailableMeetingTime> availableMeetings;
 
       mergeBusyTimes(busyTime.getValue());
-      availableMeetings = findAvailableMeetings(busyTime.getValue());
+      availableMeetings = findAvailableMeetings(busyTime.getValue(),
+          new DateTime(busyTime.getKey()));
       filterAvailableMeetings(availableMeetings,
           getDate(new DateTime(busyTime.getKey().getTime()), settings.workingHoursStart),
           getDate(new DateTime(busyTime.getKey().getTime()), settings.workingHoursEnd),
@@ -91,20 +93,45 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
   }
 
   /**
-   * Sort busy times by date.
+   * Separate busy times from the same day.
    * 
-   * @param busyTimes The busy times to sort
-   * @return The sorted busy times by date.
+   * @param busyTimes The busy times to sort.
+   * @return The separated busy times.
    */
-  private Map<Date, List<Busy>> sortBusyTimes(Map<Attendee, List<Busy>> busyTimes) {
+  private Map<Date, List<Busy>> filterByDate(Map<Attendee, List<Busy>> busyTimes) {
     Map<Date, List<Busy>> result;
+    result = new HashMap<Date, List<Busy>>();
+    for (List<Busy> busyTime : busyTimes.values()) {
+      for (Busy busy : busyTime) {
+        Date day = getDate(busy.when.startTime, 0);
 
-    result = filterByDate(busyTimes);
-    for (List<Busy> busyTime : result.values()) {
-      sortBusyTime(busyTime);
+        List<Busy> current = result.get(day);
+
+        if (current == null) {
+          current = new ArrayList<Busy>();
+          result.put(day, current);
+        }
+        current.add(busy);
+      }
     }
-
     return result;
+  }
+
+  /**
+   * Add days were every attendees are available.
+   * 
+   * @param busyTimes The list of busy times to which to add the days.
+   * @param timeSpan
+   */
+  private void addMissingDays(Map<Date, List<Busy>> busyTimes, int timeSpan) {
+    Calendar calendar = GregorianCalendar.getInstance();
+
+    setTime(calendar, 0, 0);
+    for (int i = 0; i < timeSpan; ++i) {
+      calendar.add(Calendar.DAY_OF_YEAR, 1);
+      if (!busyTimes.containsKey(calendar.getTime()))
+        busyTimes.put(calendar.getTime(), new ArrayList<Busy>());
+    }
   }
 
   /**
@@ -114,6 +141,8 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
    * @param busyTimes The busy times to merge.
    */
   private void mergeBusyTimes(List<Busy> busyTimes) {
+    sortBusyTime(busyTimes);
+
     // Merge every busy slots.
     for (int i = 0; i < busyTimes.size(); ++i) {
       Busy current = busyTimes.get(i);
@@ -138,13 +167,13 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
    * @param busyTimes The busy times from which to compute the available meeting
    * @return The available meetings time from 00:00 to 23:59 of the same day.
    */
-  private List<AvailableMeetingTime> findAvailableMeetings(List<Busy> busyTimes) {
+  private List<AvailableMeetingTime> findAvailableMeetings(List<Busy> busyTimes, DateTime day) {
     List<AvailableMeetingTime> result = new ArrayList<AvailableMeetingTime>();
     AvailableMeetingTime tmp = new AvailableMeetingTime();
     Date first = new Date();
     Date last = new Date();
 
-    setFistAndLast(busyTimes.get(0).when.startTime, first, last);
+    setFistAndLast(day, first, last);
 
     tmp.start = first;
     for (Busy busy : busyTimes) {
@@ -297,31 +326,6 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
   }
 
   /**
-   * Separate busy times from the same day.
-   * 
-   * @param busyTimes The busy times to sort.
-   * @return The separated busy times.
-   */
-  private Map<Date, List<Busy>> filterByDate(Map<Attendee, List<Busy>> busyTimes) {
-    Map<Date, List<Busy>> result;
-    result = new HashMap<Date, List<Busy>>();
-    for (List<Busy> busyTime : busyTimes.values()) {
-      for (Busy busy : busyTime) {
-        Date day = getDate(busy.when.startTime, 0);
-
-        List<Busy> current = result.get(day);
-
-        if (current == null) {
-          current = new ArrayList<Busy>();
-          result.put(day, current);
-        }
-        current.add(busy);
-      }
-    }
-    return result;
-  }
-
-  /**
    * Get the current day from {@code time} with the given {@code hourOfDay}.
    * 
    * @param time The DateTime object from which to read the day.
@@ -335,12 +339,21 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
 
     calendar.setTime(new Date(time.value));
 
+    setTime(calendar, hour, minute);
+
+    return calendar.getTime();
+  }
+
+  /**
+   * @param calendar
+   * @param hour
+   * @param minute
+   */
+  private void setTime(Calendar calendar, int hour, int minute) {
     calendar.set(Calendar.HOUR_OF_DAY, hour);
     calendar.set(Calendar.MINUTE, minute);
     calendar.clear(Calendar.SECOND);
     calendar.clear(Calendar.MILLISECOND);
-
-    return calendar.getTime();
   }
 
   /**
