@@ -16,13 +16,11 @@
 
 package com.google.android.apps.meetingscheduler;
 
-import android.widget.ImageView;
-
 import java.io.Serializable;
 
 /**
  * Represent an attendee or a potential attendee to a meeting.
- *
+ * 
  * @author Nicolas Garnier
  */
 public class Attendee implements Serializable {
@@ -31,7 +29,7 @@ public class Attendee implements Serializable {
   private static final long serialVersionUID = 1L;
 
   /** Photo of the participant */
-  public ImageView photo;
+  public String photoUri;
 
   /** Display name of the participant */
   public String name;
@@ -50,15 +48,15 @@ public class Attendee implements Serializable {
 
   /**
    * Constructor that initializes the attributes.
-   *
+   * 
    * @param name The name of the attendee
    * @param email The email of the calendar of the attendee
    * @param photo The photo of the attendee
    */
-  public Attendee(String name, String email, ImageView photo) {
+  public Attendee(String name, String email, String photoUri) {
     this.name = name;
     this.email = email;
-    this.photo = photo;
+    this.photoUri = photoUri;
     this.selected = false;
   }
 

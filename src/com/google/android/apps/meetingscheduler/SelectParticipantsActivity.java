@@ -1,6 +1,7 @@
 
 package com.google.android.apps.meetingscheduler;
 
+import android.accounts.Account;
 import android.app.Activity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -30,7 +31,7 @@ public class SelectParticipantsActivity extends Activity {
   /** The Attendee Retriever */
   // TODO: Change this to a fully-working not mock implementation, if this needs
   // asynchronous calls we should probably use an AsyncTask
-  private AttendeeRetriever attendeeRetriever = new MockAttendeeRetriever();
+  private AttendeeRetriever attendeeRetriever;// = new MockAttendeeRetriever();
 
   /** List of attendees that are selectable */
   private List<Attendee> attendees = new ArrayList<Attendee>();
@@ -53,8 +54,16 @@ public class SelectParticipantsActivity extends Activity {
           .setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.app_title_select_participants);
     }
 
-    // Adding selectable attendees
-    retrieveAttendee();
+    AccountChooser.getInstance().chooseAccount(this, new AccountChooser.AccountHandler() {
+      @Override
+      public void handleAccountSelected(Account account) {
+        // Set the attendee retriever with the selected account.
+        attendeeRetriever = new PhoneContactsRetriever(SelectParticipantsActivity.this, account);
+
+        // Adding selectable attendees
+        retrieveAttendee();
+      }
+    });
 
     // Adding listener to the EditText filter.
     addEditTextListener();
@@ -74,6 +83,9 @@ public class SelectParticipantsActivity extends Activity {
         if (selectedAttendees.size() > 0) {
           Log.i("Meeting Scheduler",
               "Find meeting button pressed - about to launch SelectMeeting activity");
+
+          // add ourself to the list of attendees.
+          selectedAttendees.add(attendeeRetriever.getCurrentUser());
           // the results are called on widgetActivityCallback
           try {
             startActivity(SelectMeetingTimeActivity.createViewIntent(getApplicationContext(),

@@ -33,7 +33,7 @@ public class Settings {
    * True if we need to take into consideration some working hours instead of
    * matching any time in the day
    */
-  public boolean useWorkingHours = false;
+  public boolean useWorkingHours = true;
 
   /**
    * True if don't return results on weekend.

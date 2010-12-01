@@ -3,6 +3,7 @@ package com.google.android.apps.meetingscheduler;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -101,10 +102,10 @@ public class SelectableAttendeeAdapter extends ArrayAdapter<Attendee> {
 
     // TODO(alainv): Change this or use other type to store attendee's photo,
     // e.g URI?.
-    if (item.photo == null) {
+    if (item.photoUri == null) {
       photoView.setImageResource(R.drawable.attendee_icon);
     } else {
-      photoView.setImageDrawable(item.photo.getDrawable());
+      photoView.setImageURI(Uri.parse(item.photoUri));
     }
   }
 
