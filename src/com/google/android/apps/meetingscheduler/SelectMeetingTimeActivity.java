@@ -2,9 +2,11 @@
 package com.google.android.apps.meetingscheduler;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Window;
 import android.widget.ExpandableListView;
@@ -39,6 +41,10 @@ public class SelectMeetingTimeActivity extends Activity {
   private List<Attendee> selectedAttendees;
 
   private AuthManager auth;
+
+  private ProgressDialog progressBar;
+
+  private Handler handler = new Handler();
 
   /** Called when the activity is first created. */
   @SuppressWarnings("unchecked")
@@ -126,15 +132,35 @@ public class SelectMeetingTimeActivity extends Activity {
       eventTimeRetriever = new CommonFreeTimesRetriever(new FreeBusyTimesRetriever(
           auth.getAuthToken()));
 
-      // Calculating the available meeting times from the selectedAttendees and
-      // the settings
-      List<AvailableMeetingTime> availableMeetingTimes = eventTimeRetriever
-          .getAvailableMeetingTime(selectedAttendees, settings);
+      new Thread(new Runnable() {
+        public void run() {
+          // Calculating the available meeting times from the selectedAttendees
+          // and
+          // the settings
+          final List<AvailableMeetingTime> availableMeetingTimes = eventTimeRetriever
+              .getAvailableMeetingTime(selectedAttendees, settings);
 
-      // Adding the available meeting times to the UI
-      ExpandableListView meetingListContainer = (ExpandableListView) findViewById(R.id.meeting_list);
-      meetingListContainer.setAdapter(new EventExpandableListAdapter(this, availableMeetingTimes));
+          // Update the progress bar
+          handler.post(new Runnable() {
+            public void run() {
+              populateMeetings(availableMeetingTimes);
+              progressBar.dismiss();
+            }
+          });
+        }
+      }).start();
+      progressBar = ProgressDialog.show(this, null,
+          "Please wait while querying attendees information...", true);
     }
+  }
+
+  /**
+   * @param availableMeetingTimes
+   */
+  private void populateMeetings(List<AvailableMeetingTime> availableMeetingTimes) {
+    // Adding the available meeting times to the UI
+    ExpandableListView meetingListContainer = (ExpandableListView) findViewById(R.id.meeting_list);
+    meetingListContainer.setAdapter(new EventExpandableListAdapter(this, availableMeetingTimes));
   }
 
 }
