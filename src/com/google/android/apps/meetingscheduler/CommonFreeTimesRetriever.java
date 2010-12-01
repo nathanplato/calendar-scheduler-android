@@ -80,7 +80,7 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
       mergeBusyTimes(busyTime.getValue());
       availableMeetings = findAvailableMeetings(busyTime.getValue(),
           new DateTime(busyTime.getKey()));
-      filterAvailableMeetings(availableMeetings,
+      filterAvailableMeetings(availableMeetings, settings.useWorkingHours,
           getDate(new DateTime(busyTime.getKey().getTime()), settings.workingHoursStart),
           getDate(new DateTime(busyTime.getKey().getTime()), settings.workingHoursEnd),
           settings.meetingLength);
@@ -198,10 +198,12 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
    * @param to The end time from which to filter meetings.
    * @param length The minimum length of the meetings.
    */
-  private void filterAvailableMeetings(List<AvailableMeetingTime> meetings, Date from, Date to,
-      int length) {
-    filterStartTime(meetings, from);
-    filterEndTime(meetings, to);
+  private void filterAvailableMeetings(List<AvailableMeetingTime> meetings,
+      boolean useWorkingHours, Date from, Date to, int length) {
+    if (useWorkingHours) {
+      filterStartTime(meetings, from);
+      filterEndTime(meetings, to);
+    }
     filterMeetingLength(meetings, length);
   }
 

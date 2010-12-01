@@ -24,8 +24,12 @@ import com.google.api.data.calendar.v2.CalendarUrl;
 import com.google.api.data.calendar.v2.UrlFactory;
 import com.google.api.data.calendar.v2.model.Busy;
 import com.google.api.data.calendar.v2.model.FreeBusy;
+import com.google.api.data.calendar.v2.model.FreeBusyList;
+import com.google.api.data.gdata.v2.model.Link;
+import com.google.api.data.gdata.v2.model.batch.BatchOperation;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -38,6 +42,8 @@ import java.util.Map;
  * @author Alain Vongsouvanh (alainv@google.com)
  */
 public class FreeBusyTimesRetriever implements BusyTimesRetriever {
+
+  private static final String BASE_FREEBUSY_ID = "http://www.google.com/calendar/feeds/default/freebusy/";
 
   /**
    * The ClientLogin authentication to use when querying the Google Calendar
@@ -64,17 +70,30 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
    */
   @Override
   public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees, Settings settings) {
-    // TODO Auto-generated method stub
     Map<Attendee, List<Busy>> result = new HashMap<Attendee, List<Busy>>();
+    Map<String, Attendee> batchIds = new HashMap<String, Attendee>();
     CalendarService service = getService();
-    DateTime startMin = getDateTime(1);
-    DateTime startMax = getDateTime(settings.timeSpan);
+    FreeBusyList batchRequest = createBatchRequest(attendees, batchIds);
+    CalendarUrl url = createBatchUrl(settings.timeSpan);
 
-    for (Attendee attendee : attendees) {
-      List<Busy> busyTimes = getBusyTimes(service, attendee, startMin, startMax);
+    try {
+      FreeBusyList freeBusyFeed = service.executeBatch(batchRequest, url);
 
-      if (busyTimes != null)
-        result.put(attendee, busyTimes);
+      for (FreeBusy entry : freeBusyFeed.entries) {
+        Attendee attendee = batchIds.get(entry.batchId);
+
+        if (attendee != null) {
+          List<Busy> busyTimes = entry.busyTimes;
+
+          if (busyTimes == null)
+            busyTimes = new ArrayList<Busy>();
+          result.put(attendee, busyTimes);
+        } else
+          Log.e(MeetingSchedulerConstants.TAG, "Unknown batch ID: " + entry.batchId);
+      }
+    } catch (IOException e) {
+      Log.e(MeetingSchedulerConstants.TAG,
+          "IOException occured while retrieving freebusy information: " + e.getMessage());
     }
 
     return result;
@@ -94,35 +113,42 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
     return result;
   }
 
-  /**
-   * Retrieve the busy times for the given {@code attendee} between
-   * {@code startMin} and {@code startMax}.
-   * 
-   * TODO(alainv): use batch request instead of multiple single requests.
-   * 
-   * @param service The service to use to query the Calendar API.
-   * @param attendee The attendee for which to query the busy times.
-   * @param startMin The date from which to query the busy times.
-   * @param startMax The date until which to query the busy times.
-   * @return
-   */
-  private List<Busy> getBusyTimes(CalendarService service, Attendee attendee, DateTime startMin,
-      DateTime startMax) {
-    CalendarUrl url = UrlFactory.getUserFreeBusyFeedUrl(attendee.email);
+  private CalendarUrl createBatchUrl(int timeSpan) {
+    CalendarUrl url = UrlFactory.getFreeBusyBatchFeedUrl();
 
-    url.startMin = startMin;
-    url.startMax = startMax;
-    try {
-      FreeBusy freeBusy = service.executeGet(url, null, false, FreeBusy.class);
+    url.startMin = getDateTime(1);
+    url.startMax = getDateTime(timeSpan);
+    return url;
+  }
 
-      return freeBusy.busyTimes;
-    } catch (IOException e) {
-      Log.e(MeetingSchedulerConstants.TAG,
-          "IOException occured while retrieving freebusy information for " + attendee.email + ": "
-              + e.getMessage());
+  private FreeBusyList createBatchRequest(List<Attendee> attendees, Map<String, Attendee> batchIds) {
+    FreeBusyList result = new FreeBusyList();
+
+    result.batchOperation = new BatchOperation();
+    result.batchOperation.type = BatchOperation.OPERATION_QUERY;
+    result.entries = new ArrayList<FreeBusy>();
+
+    for (Attendee attendee : attendees) {
+      result.entries.add(createSingleBatchRequest(attendee.email));
+      batchIds.put(attendee.email, attendee);
     }
 
-    return null;
+    return result;
+  }
+
+  private FreeBusy createSingleBatchRequest(String email) {
+    FreeBusy result = new FreeBusy();
+    Link link = new Link();
+
+    link.rel = "self";
+    link.href = UrlFactory.getUserFreeBusyFeedUrl(email).toString();
+    result.links = new ArrayList<Link>();
+    result.links.add(link);
+
+    result.batchId = email;
+    result.id = BASE_FREEBUSY_ID + email;
+
+    return result;
   }
 
   /**
