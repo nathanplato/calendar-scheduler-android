@@ -101,31 +101,21 @@ public class AccountChooser {
 
     // Let the user choose.
     Log.e("Meeting Scheduler", "Multiple matching accounts found.");
-    final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-    builder.setTitle(R.string.choose_account_title);
-    builder.setCancelable(false);
-    builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-      public void onClick(DialogInterface dialog, int which) {
-        selectedAccount = accounts[selectedAccountIndex];
-        handler.handleAccountSelected(selectedAccount);
-      }
-    });
-    builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-      public void onClick(DialogInterface dialog, int which) {
-        handler.handleAccountSelected(null);
-      }
-    });
+
     String[] choices = new String[accounts.length];
     for (int i = 0; i < accounts.length; i++) {
       choices[i] = accounts[i].name;
     }
-    builder.setSingleChoiceItems(choices, selectedAccountIndex,
-        new DialogInterface.OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {
-            selectedAccountIndex = which;
-          }
-        });
+
+    final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+    builder.setTitle(R.string.choose_account_title);
+    builder.setItems(choices, new DialogInterface.OnClickListener() {
+      public void onClick(DialogInterface dialog, int which) {
+        selectedAccountIndex = which;
+        selectedAccount = accounts[selectedAccountIndex];
+        handler.handleAccountSelected(selectedAccount);
+      }
+    });
     builder.show();
   }
 

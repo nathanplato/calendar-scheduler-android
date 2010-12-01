@@ -150,7 +150,7 @@ public class SelectMeetingTimeActivity extends Activity {
         }
       }).start();
       progressBar = ProgressDialog.show(this, null,
-          "Please wait while querying attendees information...", true);
+          "Please wait while querying attendees availabilities...", true);
     }
   }
 
