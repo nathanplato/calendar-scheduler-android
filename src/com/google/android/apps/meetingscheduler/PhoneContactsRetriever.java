@@ -53,23 +53,23 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
     
     List<Attendee> result = new ArrayList<Attendee>();
     ContentResolver cr = activity.getContentResolver();
-    Cursor cur = cr.query(ContactsContract.RawContacts.CONTENT_URI, new String[] {
+    Cursor cursor = cr.query(ContactsContract.RawContacts.CONTENT_URI, new String[] {
         RawContacts.CONTACT_ID, Contacts.DISPLAY_NAME }, RawContacts.ACCOUNT_NAME + " = '"
         + account.name + "' AND " + RawContacts.DELETED + " = '0'", null, null);
 
-    if (cur.getCount() > 0) {
-      while (cur.moveToNext()) {
-        long id = cur.getLong(cur.getColumnIndex(Email.CONTACT_ID));
+    if (cursor.getCount() > 0) {
+      while (cursor.moveToNext()) {
+        long id = cursor.getLong(cursor.getColumnIndex(Email.CONTACT_ID));
         String email = getEmail(cr, id);
 
         if (email != null) {
-          String name = cur.getString(cur.getColumnIndex(Contacts.DISPLAY_NAME));
+          String name = cursor.getString(cursor.getColumnIndex(Contacts.DISPLAY_NAME));
           String imageUri = getPhotoUri(cr, id);
 
           result.add(new Attendee(name, email, imageUri));
         }
       }
-      cur.close();
+      cursor.close();
     } else
       Log.e(MeetingSchedulerConstants.TAG, "No contacts found.");
 
@@ -93,26 +93,29 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
    * @return
    */
   private String getEmail(ContentResolver cr, long id) {
-    Cursor cur = cr.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, new String[] {
+    Cursor cursor = cr.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, new String[] {
         Email.DATA, Email.IS_PRIMARY }, Email.CONTACT_ID + " = '" + id + "'", null,
         Email.IS_PRIMARY + " DESC");
     String result = null;
 
-    if (cur.getCount() > 0) {
-      while (cur.moveToNext()) {
-        String email = cur.getString(cur.getColumnIndex(Email.DATA));
+    if (cursor.getCount() > 0) {
+      while (cursor.moveToNext()) {
+        String email = cursor.getString(cursor.getColumnIndex(Email.DATA));
 
+        // Get the first same-domain account.
         if (isSameDomain(account.name, email))
           return email;
+        // Else, get the first gmail address.
         else if (isSameDomain("@gmail.com", email) && result == null)
           result = email;
       }
+      // If none of the above has been found, use the first email address.
       if (result == null) {
-        if (cur.moveToFirst()) {
-          result = cur.getString(cur.getColumnIndex(Email.DATA));
+        if (cursor.moveToFirst()) {
+          result = cursor.getString(cursor.getColumnIndex(Email.DATA));
         }
       }
-      cur.close();
+      cursor.close();
     }
 
     return result;
@@ -142,7 +145,7 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
     Cursor cursor = cr.query(photoUri, new String[] { Contacts.Photo.DATA15 }, null, null, null);
     String result = null;
 
-    if (cursor != null) {
+    if (cursor != null && cursor.getCount() > 0) {
       if (cursor.moveToFirst()) {
         byte[] data = cursor.getBlob(0);
         if (data != null) {

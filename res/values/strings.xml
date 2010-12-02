@@ -13,4 +13,5 @@
 <string name="no_account_found_title">No Account Found</string>
 <string name="no_account_found">No account found to use</string>
 
+<string name="choose_meeting_time">Choose meeting time</string>
 </resources>

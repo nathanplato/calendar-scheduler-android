@@ -114,7 +114,7 @@ public class SelectMeetingTimeActivity extends Activity {
   }
 
   /**
-   * 
+   * Authenticates into the Calendar API using the selected account.
    */
   private void authenticate() {
     auth.doLogin(new Runnable() {
@@ -125,6 +125,10 @@ public class SelectMeetingTimeActivity extends Activity {
 
   }
 
+  /**
+   * Called when the authentication succeeded. Request the available meeting
+   * times and display the result on the scren
+   */
   private void authenticated() {
     if (auth.getAuthToken() == null) {
       authenticate();
@@ -155,12 +159,15 @@ public class SelectMeetingTimeActivity extends Activity {
   }
 
   /**
-   * @param availableMeetingTimes
+   * Displays the available meeting times on the screen.
+   * 
+   * @param availableMeetingTimes The meeting times to display.
    */
   private void populateMeetings(List<AvailableMeetingTime> availableMeetingTimes) {
     // Adding the available meeting times to the UI
     ExpandableListView meetingListContainer = (ExpandableListView) findViewById(R.id.meeting_list);
-    meetingListContainer.setAdapter(new EventExpandableListAdapter(this, availableMeetingTimes));
+    meetingListContainer.setAdapter(new EventExpandableListAdapter(this, availableMeetingTimes,
+        settings.meetingLength));
   }
 
 }
