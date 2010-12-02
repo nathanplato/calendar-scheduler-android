@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 import android.widget.Filter.FilterListener;
 import android.widget.ListView;
 
@@ -23,7 +24,7 @@ import java.util.List;
 
 /**
  * Activity Screen where the user selects the meeting attendees.
- * 
+ *
  * @author Nicolas Garnier
  */
 public class SelectParticipantsActivity extends Activity {
@@ -95,6 +96,10 @@ public class SelectParticipantsActivity extends Activity {
           }
           Log.i("Meeting Scheduler",
               "Find meeting button pressed - successfully launched SelectMeeting activity");
+        } else {
+          Toast toast = Toast.makeText(getApplicationContext(),
+              "You have to select at least 1 participant", 1000);
+          toast.show();
         }
       }
     });
@@ -168,7 +173,7 @@ public class SelectParticipantsActivity extends Activity {
 
   /**
    * Returns the list of currently selected attendees.
-   * 
+   *
    * @return the list of currently selected attendees
    */
   private List<Attendee> getSelectedAttendees() {
@@ -180,7 +185,7 @@ public class SelectParticipantsActivity extends Activity {
           selectedAttendees.add(attendee);
       }
     }
-    
+
     return selectedAttendees;
   }
 
