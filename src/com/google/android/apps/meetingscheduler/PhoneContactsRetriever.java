@@ -48,6 +48,9 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
 
   @Override
   public List<Attendee> getPossibleAttendees() {
+    if (account == null)
+      return null;
+    
     List<Attendee> result = new ArrayList<Attendee>();
     ContentResolver cr = activity.getContentResolver();
     Cursor cur = cr.query(ContactsContract.RawContacts.CONTENT_URI, new String[] {

@@ -129,7 +129,8 @@ public class SelectParticipantsActivity extends Activity {
     attendees = attendeeRetriever.getPossibleAttendees();
 
     // TODO: might need to move this in the asynchronous call's callback.
-    setAttendeeListView();
+    if (attendees != null)
+      setAttendeeListView();
   }
 
   /**
@@ -141,15 +142,17 @@ public class SelectParticipantsActivity extends Activity {
     editText.addTextChangedListener(new TextWatcher() {
       @Override
       public void onTextChanged(CharSequence s, int start, int before, int count) {
-        attendeeAdapter.getFilter().filter(s, new FilterListener() {
-          @Override
-          /**
-           * Sort the array once the filter has been completed.
-           */
-          public void onFilterComplete(int count) {
-            attendeeAdapter.sort();
-          }
-        });
+        if (attendeeAdapter != null) {
+          attendeeAdapter.getFilter().filter(s, new FilterListener() {
+            @Override
+            /**
+             * Sort the array once the filter has been completed.
+             */
+            public void onFilterComplete(int count) {
+              attendeeAdapter.sort();
+            }
+          });
+        }
 
       }
 
@@ -171,10 +174,13 @@ public class SelectParticipantsActivity extends Activity {
   private List<Attendee> getSelectedAttendees() {
     List<Attendee> selectedAttendees = new ArrayList<Attendee>();
 
-    for (Attendee attendee : attendees) {
-      if (attendee.selected)
-        selectedAttendees.add(attendee);
+    if (attendees != null) {
+      for (Attendee attendee : attendees) {
+        if (attendee.selected)
+          selectedAttendees.add(attendee);
+      }
     }
+    
     return selectedAttendees;
   }
 
