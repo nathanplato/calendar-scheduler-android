@@ -57,22 +57,29 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
   public List<Attendee> getPossibleAttendees() {
     List<Attendee> result = new ArrayList<Attendee>();
     ContentResolver cr = activity.getContentResolver();
-    Cursor cur = cr.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, new String[] {
-        Email.CONTACT_ID, Contacts.DISPLAY_NAME, Email.DATA }, RawContacts.ACCOUNT_NAME + " = '"
-        + account.name + "'", null, null);
+    Cursor cur = cr.query(ContactsContract.RawContacts.CONTENT_URI, new String[] {
+        RawContacts.CONTACT_ID, Contacts.DISPLAY_NAME }, RawContacts.ACCOUNT_NAME + " = '"
+        + account.name + "' AND " + RawContacts.DELETED + " = '0'", null, null);
 
     if (cur.getCount() > 0) {
       while (cur.moveToNext()) {
         long id = cur.getLong(cur.getColumnIndex(Email.CONTACT_ID));
-        String name = cur.getString(cur.getColumnIndex(Contacts.DISPLAY_NAME));
-        String email = cur.getString(cur.getColumnIndex(Email.DATA));
-        String imageUri = getPhotoUri(cr, id);
+        String email = getEmail(cr, id);
 
-        result.add(new Attendee(name, email, imageUri));
+        if (email != null) {
+          String name = cur.getString(cur.getColumnIndex(Contacts.DISPLAY_NAME)) + " - " + email;
+          String imageUri = getPhotoUri(cr, id);
+
+          result.add(new Attendee(name, email, imageUri));
+        }
       }
       cur.close();
     } else
       Log.e(MeetingSchedulerConstants.TAG, "No contacts found.");
+
+    Attendee current = getCurrentUser();
+    current.selected = true;
+    result.add(current);
 
     return result;
   }
@@ -86,6 +93,45 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
   @Override
   public Attendee getCurrentUser() {
     return new Attendee(account.name, account.name, null);
+  }
+
+  /**
+   * Get the correct email address to use for the current contact.
+   * 
+   * @param cr
+   * @param id
+   * @return
+   */
+  private String getEmail(ContentResolver cr, long id) {
+    Cursor cur = cr.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, new String[] {
+        Email.DATA, Email.IS_PRIMARY }, Email.CONTACT_ID + " = '" + id + "'", null,
+        Email.IS_PRIMARY + " DESC");
+    String firstGmail = null;
+
+    if (cur.getCount() > 0) {
+      while (cur.moveToNext()) {
+        String email = cur.getString(cur.getColumnIndex(Email.DATA));
+
+        if (isSameDomain(account.name, email))
+          return email;
+        else if (isSameDomain("@gmail.com", email))
+          firstGmail = email;
+      }
+      cur.close();
+    }
+
+    return firstGmail;
+  }
+
+  /**
+   * Check if two emails are of the same domain.
+   * 
+   * @param lhs
+   * @param rhs
+   * @return
+   */
+  private boolean isSameDomain(String lhs, String rhs) {
+    return lhs.substring(lhs.indexOf('@')).equalsIgnoreCase(rhs.substring(rhs.indexOf('@')));
   }
 
   /**

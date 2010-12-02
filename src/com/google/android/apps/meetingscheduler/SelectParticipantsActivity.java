@@ -84,8 +84,6 @@ public class SelectParticipantsActivity extends Activity {
           Log.i("Meeting Scheduler",
               "Find meeting button pressed - about to launch SelectMeeting activity");
 
-          // add ourself to the list of attendees.
-          selectedAttendees.add(attendeeRetriever.getCurrentUser());
           // the results are called on widgetActivityCallback
           try {
             startActivity(SelectMeetingTimeActivity.createViewIntent(getApplicationContext(),
