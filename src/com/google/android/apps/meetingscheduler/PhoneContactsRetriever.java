@@ -25,7 +25,6 @@ import android.net.Uri;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.provider.ContactsContract.Contacts;
-import android.provider.ContactsContract.RawContacts;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -50,16 +49,15 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
   public List<Attendee> getPossibleAttendees() {
     if (account == null)
       return null;
-    
+
     List<Attendee> result = new ArrayList<Attendee>();
     ContentResolver cr = activity.getContentResolver();
-    Cursor cursor = cr.query(ContactsContract.RawContacts.CONTENT_URI, new String[] {
-        RawContacts.CONTACT_ID, Contacts.DISPLAY_NAME }, RawContacts.ACCOUNT_NAME + " = '"
-        + account.name + "' AND " + RawContacts.DELETED + " = '0'", null, null);
+    Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, new String[] { Contacts._ID,
+        Contacts.DISPLAY_NAME }, null, null, null);
 
     if (cursor.getCount() > 0) {
       while (cursor.moveToNext()) {
-        long id = cursor.getLong(cursor.getColumnIndex(Email.CONTACT_ID));
+        long id = cursor.getLong(cursor.getColumnIndex(Contacts._ID));
         String email = getEmail(cr, id);
 
         if (email != null) {
