@@ -23,7 +23,7 @@ public class AttendeeComparator implements Comparator<Attendee> {
    */
   public int compare(Attendee lhs, Attendee rhs) {
     if (lhs.selected == rhs.selected)
-      return lhs.name.compareTo(rhs.name);
+      return lhs.name.compareToIgnoreCase(rhs.name);
     else
       // Put selected on top.
       return rhs.selected.compareTo(lhs.selected);

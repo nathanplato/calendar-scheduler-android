@@ -33,7 +33,7 @@ import java.util.List;
 
 /**
  * Get the contacts from the phone for the selected account.
- *
+ * 
  * @author Alain Vongsouvanh (alainv@google.com)
  */
 public class PhoneContactsRetriever implements AttendeeRetriever {
@@ -60,7 +60,7 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
         String email = getEmail(cr, id);
 
         if (email != null) {
-          String name = cur.getString(cur.getColumnIndex(Contacts.DISPLAY_NAME)) + " - " + email;
+          String name = cur.getString(cur.getColumnIndex(Contacts.DISPLAY_NAME));
           String imageUri = getPhotoUri(cr, id);
 
           result.add(new Attendee(name, email, imageUri));
@@ -84,7 +84,7 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
 
   /**
    * Get the correct email address to use for the current contact.
-   *
+   * 
    * @param cr
    * @param id
    * @return
@@ -93,29 +93,31 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
     Cursor cur = cr.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI, new String[] {
         Email.DATA, Email.IS_PRIMARY }, Email.CONTACT_ID + " = '" + id + "'", null,
         Email.IS_PRIMARY + " DESC");
-    String firstGmail = null;
+    String result = null;
 
     if (cur.getCount() > 0) {
       while (cur.moveToNext()) {
         String email = cur.getString(cur.getColumnIndex(Email.DATA));
 
-        if (isSameDomain(account.name, email)) {
+        if (isSameDomain(account.name, email))
           return email;
-        } else if (isSameDomain("@gmail.com", email)) {
-          firstGmail = email;
-        } else if (firstGmail == null) {
-          firstGmail = email;
+        else if (isSameDomain("@gmail.com", email) && result == null)
+          result = email;
+      }
+      if (result == null) {
+        if (cur.moveToFirst()) {
+          result = cur.getString(cur.getColumnIndex(Email.DATA));
         }
       }
       cur.close();
     }
 
-    return firstGmail;
+    return result;
   }
 
   /**
    * Check if two emails are of the same domain.
-   *
+   * 
    * @param lhs
    * @param rhs
    * @return
@@ -126,7 +128,7 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
 
   /**
    * Get the contact's Photo URI if it exists.
-   *
+   * 
    * @param cr
    * @param id
    * @return The contact's Photo URI.
