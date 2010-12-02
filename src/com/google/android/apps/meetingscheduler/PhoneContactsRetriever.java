@@ -32,7 +32,7 @@ import java.util.List;
 
 /**
  * Get the contacts from the phone for the selected account.
- * 
+ *
  * @author Alain Vongsouvanh (alainv@google.com)
  */
 public class PhoneContactsRetriever implements AttendeeRetriever {
@@ -80,12 +80,12 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
 
   @Override
   public Attendee getCurrentUser() {
-    return new Attendee(account.name, account.name, null);
+    return new Attendee("Me", account.name, null);
   }
 
   /**
    * Get the correct email address to use for the current contact.
-   * 
+   *
    * @param cr
    * @param id
    * @return
@@ -121,7 +121,7 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
 
   /**
    * Check if two emails are of the same domain.
-   * 
+   *
    * @param lhs
    * @param rhs
    * @return
@@ -132,7 +132,7 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
 
   /**
    * Get the contact's Photo URI if it exists.
-   * 
+   *
    * @param cr
    * @param id
    * @return The contact's Photo URI.
