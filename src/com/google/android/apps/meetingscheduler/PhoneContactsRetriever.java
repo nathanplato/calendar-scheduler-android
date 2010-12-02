@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2010 Google Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -33,7 +33,7 @@ import java.util.List;
 
 /**
  * Get the contacts from the phone for the selected account.
- * 
+ *
  * @author Alain Vongsouvanh (alainv@google.com)
  */
 public class PhoneContactsRetriever implements AttendeeRetriever {
@@ -46,13 +46,6 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
     this.account = account;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.google.android.apps.meetingscheduler.AttendeeRetriever#getPossibleAttendees
-   * ()
-   */
   @Override
   public List<Attendee> getPossibleAttendees() {
     List<Attendee> result = new ArrayList<Attendee>();
@@ -84,12 +77,6 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
     return result;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.google.android.apps.meetingscheduler.AttendeeRetriever#getCurrentUser()
-   */
   @Override
   public Attendee getCurrentUser() {
     return new Attendee(account.name, account.name, null);
@@ -97,7 +84,7 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
 
   /**
    * Get the correct email address to use for the current contact.
-   * 
+   *
    * @param cr
    * @param id
    * @return
@@ -112,10 +99,13 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
       while (cur.moveToNext()) {
         String email = cur.getString(cur.getColumnIndex(Email.DATA));
 
-        if (isSameDomain(account.name, email))
+        if (isSameDomain(account.name, email)) {
           return email;
-        else if (isSameDomain("@gmail.com", email))
+        } else if (isSameDomain("@gmail.com", email)) {
           firstGmail = email;
+        } else if (firstGmail == null) {
+          firstGmail = email;
+        }
       }
       cur.close();
     }
@@ -125,7 +115,7 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
 
   /**
    * Check if two emails are of the same domain.
-   * 
+   *
    * @param lhs
    * @param rhs
    * @return
@@ -136,7 +126,7 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
 
   /**
    * Get the contact's Photo URI if it exists.
-   * 
+   *
    * @param cr
    * @param id
    * @return The contact's Photo URI.
