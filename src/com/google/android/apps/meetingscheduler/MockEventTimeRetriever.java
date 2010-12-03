@@ -17,46 +17,38 @@
 package com.google.android.apps.meetingscheduler;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
  * Retrieves fake available meeting time for testing purposes.
- *
+ * 
  * @author Nicolas Garnier
  */
 public class MockEventTimeRetriever implements EventTimeRetriever {
 
   public List<AvailableMeetingTime> getAvailableMeetingTime(List<Attendee> attendees,
-      Settings settings) {
+      Settings settings, Date startDate) {
     List<AvailableMeetingTime> availableMeetingTimes = new ArrayList<AvailableMeetingTime>();
-    availableMeetingTimes.add(new AvailableMeetingTime(
-        new GregorianCalendar(2010, 11, 20, 10, 00).getTime(),
-        new GregorianCalendar(2010, 11, 20, 11, 00).getTime(), attendees));
-    availableMeetingTimes.add(new AvailableMeetingTime(
-        new GregorianCalendar(2010, 11, 20, 8, 00).getTime(),
-        new GregorianCalendar(2010, 11, 20, 9, 00).getTime(), attendees));
-    availableMeetingTimes.add(new AvailableMeetingTime(
-        new GregorianCalendar(2010, 11, 22, 10, 00).getTime(),
-        new GregorianCalendar(2010, 11, 22, 11, 00).getTime(), attendees));
-    availableMeetingTimes.add(new AvailableMeetingTime(
-        new GregorianCalendar(2010, 11, 22, 11, 00).getTime(),
-        new GregorianCalendar(2010, 11, 22, 12, 00).getTime(), attendees));
-    availableMeetingTimes.add(new AvailableMeetingTime(
-        new GregorianCalendar(2010, 11, 23, 14, 00).getTime(),
-        new GregorianCalendar(2010, 11, 23, 15, 00).getTime(), attendees));
-    availableMeetingTimes.add(new AvailableMeetingTime(
-        new GregorianCalendar(2010, 11, 23, 12, 00).getTime(),
-        new GregorianCalendar(2010, 11, 23, 13, 00).getTime(), attendees));
-    availableMeetingTimes.add(new AvailableMeetingTime(
-        new GregorianCalendar(2010, 11, 24, 12, 00).getTime(),
-        new GregorianCalendar(2010, 11, 24, 13, 00).getTime(), attendees));
-    availableMeetingTimes.add(new AvailableMeetingTime(
-        new GregorianCalendar(2010, 11, 24, 13, 00).getTime(),
-        new GregorianCalendar(2010, 11, 24, 14, 00).getTime(), attendees));
-    availableMeetingTimes.add(new AvailableMeetingTime(
-        new GregorianCalendar(2010, 11, 24, 15, 00).getTime(),
-        new GregorianCalendar(2010, 11, 24, 16, 00).getTime(), attendees));
+    availableMeetingTimes.add(new AvailableMeetingTime(new GregorianCalendar(2010, 11, 20, 10, 00)
+        .getTime(), new GregorianCalendar(2010, 11, 20, 11, 00).getTime(), attendees));
+    availableMeetingTimes.add(new AvailableMeetingTime(new GregorianCalendar(2010, 11, 20, 8, 00)
+        .getTime(), new GregorianCalendar(2010, 11, 20, 9, 00).getTime(), attendees));
+    availableMeetingTimes.add(new AvailableMeetingTime(new GregorianCalendar(2010, 11, 22, 10, 00)
+        .getTime(), new GregorianCalendar(2010, 11, 22, 11, 00).getTime(), attendees));
+    availableMeetingTimes.add(new AvailableMeetingTime(new GregorianCalendar(2010, 11, 22, 11, 00)
+        .getTime(), new GregorianCalendar(2010, 11, 22, 12, 00).getTime(), attendees));
+    availableMeetingTimes.add(new AvailableMeetingTime(new GregorianCalendar(2010, 11, 23, 14, 00)
+        .getTime(), new GregorianCalendar(2010, 11, 23, 15, 00).getTime(), attendees));
+    availableMeetingTimes.add(new AvailableMeetingTime(new GregorianCalendar(2010, 11, 23, 12, 00)
+        .getTime(), new GregorianCalendar(2010, 11, 23, 13, 00).getTime(), attendees));
+    availableMeetingTimes.add(new AvailableMeetingTime(new GregorianCalendar(2010, 11, 24, 12, 00)
+        .getTime(), new GregorianCalendar(2010, 11, 24, 13, 00).getTime(), attendees));
+    availableMeetingTimes.add(new AvailableMeetingTime(new GregorianCalendar(2010, 11, 24, 13, 00)
+        .getTime(), new GregorianCalendar(2010, 11, 24, 14, 00).getTime(), attendees));
+    availableMeetingTimes.add(new AvailableMeetingTime(new GregorianCalendar(2010, 11, 24, 15, 00)
+        .getTime(), new GregorianCalendar(2010, 11, 24, 16, 00).getTime(), attendees));
     return availableMeetingTimes;
   }
 }

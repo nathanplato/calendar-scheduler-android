@@ -23,13 +23,19 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.ExpandableListView;
 
 import com.google.api.data.calendar.v2.CalendarApiInfo;
 
 import java.io.NotSerializableException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 /**
@@ -49,17 +55,20 @@ public class SelectMeetingTimeActivity extends Activity {
   private Settings settings = new Settings();
 
   /** The application settings */
-  // TODO: Change this to a fully-working not mock implementation, if this needs
-  // asynchronous calls we should probably use an AsyncTask
   private EventTimeRetriever eventTimeRetriever;
 
   private List<Attendee> selectedAttendees;
+
+  private List<AvailableMeetingTime> availableMeetingTimes;
 
   private AuthManager auth;
 
   private ProgressDialog progressBar;
 
   private Handler handler = new Handler();
+
+  /** The date from which to start to look for available meeting times */
+  private Calendar startDate;
 
   /** Called when the activity is first created. */
   @SuppressWarnings("unchecked")
@@ -83,6 +92,13 @@ public class SelectMeetingTimeActivity extends Activity {
     // Create a new Authentication Manager to authenticate in the Calendar API.
     auth = new AuthManager(this, MeetingSchedulerConstants.GET_LOGIN, null, true,
         CalendarApiInfo.AUTH_TOKEN_TYPE);
+
+    availableMeetingTimes = new ArrayList<AvailableMeetingTime>();
+
+    startDate = GregorianCalendar.getInstance();
+    startDate.add(Calendar.DAY_OF_YEAR, 1);
+
+    setFindMoreButton();
 
     authenticate();
   }
@@ -132,6 +148,20 @@ public class SelectMeetingTimeActivity extends Activity {
     }
   }
 
+  private void setFindMoreButton() {
+    Button findMore = (Button) findViewById(R.id.find_more_meeting_time_button);
+
+    findMore.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        if (auth.getAuthToken() != null) {
+          startDate.add(Calendar.DAY_OF_YEAR, settings.timeSpan);
+          findMeetings();
+        }
+      }
+    });
+  }
+
   /**
    * Authenticates into the Calendar API using the selected account.
    */
@@ -155,29 +185,36 @@ public class SelectMeetingTimeActivity extends Activity {
       eventTimeRetriever = new CommonFreeTimesRetriever(new FreeBusyTimesRetriever(
           auth.getAuthToken()));
 
-      // Retrieves the common free time on a seperate thread.
-      new Thread(new Runnable() {
-        public void run() {
-          // Calculating the available meeting times from the selectedAttendees
-          // and
-          // the settings
-          final List<AvailableMeetingTime> availableMeetingTimes = eventTimeRetriever
-              .getAvailableMeetingTime(selectedAttendees, settings);
-
-          // Update the progress bar
-          handler.post(new Runnable() {
-            public void run() {
-              populateMeetings(availableMeetingTimes);
-              if (progressBar != null)
-                progressBar.dismiss();
-            }
-          });
-        }
-      }).start();
-      // Show a progress bar while the common free times are computed.
-      progressBar = ProgressDialog.show(this, null,
-          "Please wait while querying attendees availabilities...", true);
+      findMeetings();
     }
+  }
+
+  /**
+   * Find available meetings time.
+   */
+  private void findMeetings() {
+    // Retrieves the common free time on a seperate thread.
+    new Thread(new Runnable() {
+      public void run() {
+        // Calculating the available meeting times from the selectedAttendees
+        // and
+        // the settings
+        final List<AvailableMeetingTime> newTimes = eventTimeRetriever.getAvailableMeetingTime(
+            selectedAttendees, settings, startDate.getTime());
+
+        // Update the progress bar
+        handler.post(new Runnable() {
+          public void run() {
+            populateMeetings(newTimes);
+            if (progressBar != null)
+              progressBar.dismiss();
+          }
+        });
+      }
+    }).start();
+    // Show a progress bar while the common free times are computed.
+    progressBar = ProgressDialog.show(this, null,
+        "Please wait while querying attendees availabilities...", true);
   }
 
   /**
@@ -185,7 +222,8 @@ public class SelectMeetingTimeActivity extends Activity {
    * 
    * @param availableMeetingTimes The meeting times to display.
    */
-  private void populateMeetings(List<AvailableMeetingTime> availableMeetingTimes) {
+  private void populateMeetings(List<AvailableMeetingTime> newTimes) {
+    availableMeetingTimes.addAll(newTimes);
     // Adding the available meeting times to the UI
     ExpandableListView meetingListContainer = (ExpandableListView) findViewById(R.id.meeting_list);
     meetingListContainer.setAdapter(new EventExpandableListAdapter(this, availableMeetingTimes,

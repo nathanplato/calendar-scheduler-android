@@ -21,6 +21,7 @@ import com.google.api.data.calendar.v2.model.Busy;
 import com.google.api.data.gdata.v2.model.When;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,8 @@ import java.util.Map;
 public class MockBusyTimeRetriever implements BusyTimesRetriever {
 
   @Override
-  public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees, Settings settings) {
+  public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees, Settings settings,
+      Date startDate) {
     Map<Attendee, List<Busy>> result = new HashMap<Attendee, List<Busy>>();
     List<List<Busy>> mockBusyTimes = getMockBusyTimes();
     int maxSize = mockBusyTimes.size();

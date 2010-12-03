@@ -26,11 +26,13 @@ import com.google.api.data.calendar.v2.model.Busy;
 import com.google.api.data.calendar.v2.model.FreeBusy;
 import com.google.api.data.calendar.v2.model.FreeBusyList;
 import com.google.api.data.gdata.v2.model.Link;
+import com.google.api.data.gdata.v2.model.When;
 import com.google.api.data.gdata.v2.model.batch.BatchOperation;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -61,20 +63,14 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
     this.authToken = authToken;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.google.android.apps.meetingscheduler.BusyTimesRetriever#getBusyTimes
-   * (java.util.List, com.google.android.apps.meetingscheduler.Settings)
-   */
   @Override
-  public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees, Settings settings) {
+  public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees, Settings settings,
+      Date startDate) {
     Map<Attendee, List<Busy>> result = new HashMap<Attendee, List<Busy>>();
     Map<String, Attendee> batchIds = new HashMap<String, Attendee>();
     CalendarService service = getService();
     FreeBusyList batchRequest = createBatchRequest(attendees, batchIds);
-    CalendarUrl url = createBatchUrl(settings.timeSpan);
+    CalendarUrl url = createBatchUrl(startDate, settings.timeSpan);
 
     try {
       FreeBusyList freeBusyFeed = service.executeBatch(batchRequest, url);
@@ -87,6 +83,7 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
 
           if (busyTimes == null)
             busyTimes = new ArrayList<Busy>();
+          cleanBusyTimes(busyTimes);
           result.put(attendee, busyTimes);
         } else
           Log.e(MeetingSchedulerConstants.TAG, "Unknown batch ID: " + entry.batchId);
@@ -97,6 +94,28 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
     }
 
     return result;
+  }
+
+  /**
+   * Split multiple day-busy times into multiple one-day busy times.
+   * 
+   * @param busyTimes The busy times to clean.
+   */
+  private void cleanBusyTimes(List<Busy> busyTimes) {
+    for (int i = 0; i < busyTimes.size();) {
+      Busy current = busyTimes.get(i);
+      Date currentStart = new Date(current.when.startTime.value);
+      Date currentEnd = new Date(current.when.endTime.value);
+
+      if (!isSameDay(currentStart, currentEnd)) {
+        List<Busy> splitted = splitBusyTimes(currentStart, currentEnd);
+
+        busyTimes.remove(i);
+        busyTimes.addAll(i, splitted);
+        i += splitted.size();
+      } else
+        ++i;
+    }
   }
 
   /**
@@ -113,14 +132,29 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
     return result;
   }
 
-  private CalendarUrl createBatchUrl(int timeSpan) {
+  /**
+   * Create the URL to which to send the batch request.
+   * 
+   * @param startDate The date from which the request start.
+   * @param timeSpan The number of days for which to request.
+   * @return The URL to the batch request.
+   */
+  private CalendarUrl createBatchUrl(Date startDate, int timeSpan) {
     CalendarUrl url = UrlFactory.getFreeBusyBatchFeedUrl();
 
-    url.startMin = getDateTime(1);
-    url.startMax = getDateTime(timeSpan);
+    url.startMin = getDateTime(startDate, 0);
+    url.startMax = getDateTime(startDate, timeSpan);
     return url;
   }
 
+  /**
+   * Create the batch request to send to the Calendar API.
+   * 
+   * @param attendees The attendees for whom to request the busy times.
+   * @param batchIds The map to store the batch IDs corresponding to the
+   *          attendees.
+   * @return The batch request to send to the Calendar API.
+   */
   private FreeBusyList createBatchRequest(List<Attendee> attendees, Map<String, Attendee> batchIds) {
     FreeBusyList result = new FreeBusyList();
 
@@ -136,6 +170,12 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
     return result;
   }
 
+  /**
+   * Create a single batch request for an attendee.
+   * 
+   * @param email The attendee for which to create the batch request.
+   * @return The batch request for the attendee.
+   */
   private FreeBusy createSingleBatchRequest(String email) {
     FreeBusy result = new FreeBusy();
     Link link = new Link();
@@ -155,13 +195,16 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
    * Create a new DateTime object initialized at the current day +
    * {@code daysToAdd}.
    * 
+   * @param startDate The date from which to compute the DateTime.
    * @param daysToAdd The number of days to add to the result.
+   * 
    * @return The new DateTime object initialized at the current day +
    *         {@code daysToAdd}.
    */
-  private DateTime getDateTime(int daysToAdd) {
-    Calendar calendar = GregorianCalendar.getInstance();
+  private DateTime getDateTime(Date startDate, int daysToAdd) {
+    Calendar calendar = new GregorianCalendar();
 
+    calendar.setTime(startDate);
     // Clear time component.
     calendar.set(Calendar.HOUR_OF_DAY, 0);
     calendar.clear(Calendar.HOUR);
@@ -173,4 +216,88 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
 
     return new DateTime(calendar.getTime());
   }
+
+  /**
+   * Check if two dates are on the same day.
+   * 
+   * @param lhs
+   * @param rhs
+   * @return True if {@code lhs} and {@code rhs} are on the same day.
+   */
+  private boolean isSameDay(Date lhs, Date rhs) {
+    Calendar clhs = new GregorianCalendar();
+    Calendar crhs = new GregorianCalendar();
+
+    clhs.setTime(lhs);
+    crhs.setTime(rhs);
+    return clhs.get(Calendar.DAY_OF_YEAR) == crhs.get(Calendar.DAY_OF_YEAR)
+        && clhs.get(Calendar.YEAR) == crhs.get(Calendar.YEAR);
+  }
+
+  /**
+   * Split a busy time into a set of busy time, each for one day.
+   * 
+   * @param startDate
+   * @param endDate
+   * @return
+   */
+  private List<Busy> splitBusyTimes(Date startDate, Date endDate) {
+    List<Busy> result = new ArrayList<Busy>();
+    Calendar currentDay = new GregorianCalendar();
+
+    currentDay.setTime(startDate);
+    setTime(currentDay, 23, 59, 59, 999);
+
+    result.add(createBusyTime(startDate, currentDay.getTime()));
+
+    while (true) {
+      setTime(currentDay, 0, 0, 0, 0);
+      currentDay.add(Calendar.DAY_OF_YEAR, 1);
+      Date currentStart = currentDay.getTime();
+
+      if (isSameDay(currentStart, endDate))
+        break;
+
+      setTime(currentDay, 23, 59, 59, 999);
+      result.add(createBusyTime(currentStart, currentDay.getTime()));
+    }
+
+    result.add(createBusyTime(currentDay.getTime(), endDate));
+
+    return result;
+  }
+
+  /**
+   * Create a Busy object with {@code startDate} as starting time and
+   * {@code endDate} as ending time.
+   * 
+   * @param startDate The date on which the Busy object starts.
+   * @param endDate The date on which the Busy object ends.
+   * @return The newly created Busy object.
+   */
+  private Busy createBusyTime(Date startDate, Date endDate) {
+    Busy result = new Busy();
+
+    result.when = new When();
+    result.when.startTime = new DateTime(startDate);
+    result.when.endTime = new DateTime(endDate);
+    return result;
+  }
+
+  /**
+   * Set the time on the {@code calendar}.
+   * 
+   * @param calendar
+   * @param hour
+   * @param minute
+   * @param second
+   * @param millis
+   */
+  private void setTime(Calendar calendar, int hour, int minute, int second, int millis) {
+    calendar.set(Calendar.HOUR_OF_DAY, hour);
+    calendar.set(Calendar.MINUTE, minute);
+    calendar.set(Calendar.SECOND, second);
+    calendar.set(Calendar.MILLISECOND, millis);
+  }
+
 }

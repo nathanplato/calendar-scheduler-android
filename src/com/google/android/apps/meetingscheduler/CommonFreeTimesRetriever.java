@@ -68,12 +68,13 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
    */
   @Override
   public List<AvailableMeetingTime> getAvailableMeetingTime(List<Attendee> attendees,
-      Settings settings) {
-    Map<Attendee, List<Busy>> busyTimes = busyTimeRetriever.getBusyTimes(attendees, settings);
+      Settings settings, Date startDate) {
+    Map<Attendee, List<Busy>> busyTimes = busyTimeRetriever.getBusyTimes(attendees, settings,
+        startDate);
     Map<Date, List<Busy>> sortedBusyTimes = filterByDate(busyTimes);
     List<AvailableMeetingTime> result = new ArrayList<AvailableMeetingTime>();
 
-    addMissingDays(sortedBusyTimes, settings.timeSpan);
+    addMissingDays(sortedBusyTimes, startDate, settings.timeSpan);
     for (Map.Entry<Date, List<Busy>> busyTime : sortedBusyTimes.entrySet()) {
       List<AvailableMeetingTime> availableMeetings;
 
@@ -123,14 +124,15 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
    * @param busyTimes The list of busy times to which to add the days.
    * @param timeSpan
    */
-  private void addMissingDays(Map<Date, List<Busy>> busyTimes, int timeSpan) {
-    Calendar calendar = GregorianCalendar.getInstance();
+  private void addMissingDays(Map<Date, List<Busy>> busyTimes, Date startDate, int timeSpan) {
+    Calendar calendar = new GregorianCalendar();
 
+    calendar.setTime(startDate);
     setTime(calendar, 0, 0);
     for (int i = 0; i < timeSpan; ++i) {
-      calendar.add(Calendar.DAY_OF_YEAR, 1);
       if (!busyTimes.containsKey(calendar.getTime()))
         busyTimes.put(calendar.getTime(), new ArrayList<Busy>());
+      calendar.add(Calendar.DAY_OF_YEAR, 1);
     }
   }
 

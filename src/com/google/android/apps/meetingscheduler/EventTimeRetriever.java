@@ -16,11 +16,12 @@
 
 package com.google.android.apps.meetingscheduler;
 
+import java.util.Date;
 import java.util.List;
 
 /**
  * Allows the retrieval of available meeting times.
- *
+ * 
  * @author Nicolas Garnier
  */
 public interface EventTimeRetriever {
@@ -28,12 +29,14 @@ public interface EventTimeRetriever {
   /**
    * Returns the list of available meeting times where all the given attendees
    * are free.
-   *
+   * 
    * @param attendees The list of attendees for which we want to find meeting
    *          times
    * @param settings The additional restrictions on the meeting times.
+   * @param startDate the date from which to start querying available meeting
+   *          times.
    * @return The list of available meeting times
    */
   public List<AvailableMeetingTime> getAvailableMeetingTime(List<Attendee> attendees,
-      Settings settings);
+      Settings settings, Date startDate);
 }
