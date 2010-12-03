@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2010 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 package com.google.android.apps.meetingscheduler;
 
@@ -65,6 +80,7 @@ public class SelectMeetingTimeActivity extends Activity {
     final Intent intent = getIntent();
     selectedAttendees = (List<Attendee>) intent.getSerializableExtra(SELECTED_ATTENDEES);
 
+    // Create a new Authentication Manager to authenticate in the Calendar API.
     auth = new AuthManager(this, MeetingSchedulerConstants.GET_LOGIN, null, true,
         CalendarApiInfo.AUTH_TOKEN_TYPE);
 
@@ -85,16 +101,19 @@ public class SelectMeetingTimeActivity extends Activity {
       throws NotSerializableException {
     Intent intent = new Intent(context, SelectMeetingTimeActivity.class);
     if (!(selectedAttendees instanceof Serializable)) {
-      Log.e("Meeting Scheduler", "List<Attendee> selectedAttendees is not serializable");
+      Log.e(MeetingSchedulerConstants.TAG, "List<Attendee> selectedAttendees is not serializable");
       throw new NotSerializableException();
     }
     intent.putExtra(SELECTED_ATTENDEES, (Serializable) selectedAttendees);
-    Log.e("Meeting Scheduler",
+    Log.e(MeetingSchedulerConstants.TAG,
         "Successfully serialized List<Attendee> selectedAttendees in the intent");
     intent.setClass(context, SelectMeetingTimeActivity.class);
     return intent;
   }
 
+  /**
+   * Called when the authentication has finished.
+   */
   @Override
   public void onActivityResult(int requestCode, int resultCode, final Intent results) {
     super.onActivityResult(requestCode, resultCode, results);
@@ -127,7 +146,7 @@ public class SelectMeetingTimeActivity extends Activity {
 
   /**
    * Called when the authentication succeeded. Request the available meeting
-   * times and display the result on the scren
+   * times and display the result on the screen.
    */
   private void authenticated() {
     if (auth.getAuthToken() == null) {
@@ -136,6 +155,7 @@ public class SelectMeetingTimeActivity extends Activity {
       eventTimeRetriever = new CommonFreeTimesRetriever(new FreeBusyTimesRetriever(
           auth.getAuthToken()));
 
+      // Retrieves the common free time on a seperate thread.
       new Thread(new Runnable() {
         public void run() {
           // Calculating the available meeting times from the selectedAttendees
@@ -148,11 +168,13 @@ public class SelectMeetingTimeActivity extends Activity {
           handler.post(new Runnable() {
             public void run() {
               populateMeetings(availableMeetingTimes);
-              progressBar.dismiss();
+              if (progressBar != null)
+                progressBar.dismiss();
             }
           });
         }
       }).start();
+      // Show a progress bar while the common free times are computed.
       progressBar = ProgressDialog.show(this, null,
           "Please wait while querying attendees availabilities...", true);
     }

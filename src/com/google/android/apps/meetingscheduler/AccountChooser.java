@@ -100,7 +100,7 @@ public class AccountChooser {
     }
 
     // Let the user choose.
-    Log.e("Meeting Scheduler", "Multiple matching accounts found.");
+    Log.e(MeetingSchedulerConstants.TAG, "Multiple matching accounts found.");
 
     String[] choices = new String[accounts.length];
     for (int i = 0; i < accounts.length; i++) {
@@ -123,7 +123,7 @@ public class AccountChooser {
    * Puts up a dialog alerting the user that no suitable account was found.
    */
   private void alertNoAccounts(final Activity activity, final AccountHandler handler) {
-    Log.e("Meeting Scheduler", "No matching accounts found.");
+    Log.e(MeetingSchedulerConstants.TAG, "No matching accounts found.");
     final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
     builder.setTitle(R.string.no_account_found_title);
     builder.setMessage(R.string.no_account_found);

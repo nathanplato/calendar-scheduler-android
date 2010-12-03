@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2010 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 package com.google.android.apps.meetingscheduler;
 
@@ -14,9 +29,9 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 import android.widget.Filter.FilterListener;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.io.NotSerializableException;
 import java.util.ArrayList;
@@ -24,7 +39,7 @@ import java.util.List;
 
 /**
  * Activity Screen where the user selects the meeting attendees.
- *
+ * 
  * @author Nicolas Garnier
  */
 public class SelectParticipantsActivity extends Activity {
@@ -81,7 +96,7 @@ public class SelectParticipantsActivity extends Activity {
       public void onClick(View v) {
         List<Attendee> selectedAttendees = getSelectedAttendees();
         if (selectedAttendees.size() > 0) {
-          Log.i("Meeting Scheduler",
+          Log.i(MeetingSchedulerConstants.TAG,
               "Find meeting button pressed - about to launch SelectMeeting activity");
 
           // the results are called on widgetActivityCallback
@@ -90,10 +105,11 @@ public class SelectParticipantsActivity extends Activity {
                 selectedAttendees));
 
           } catch (NotSerializableException e) {
-            Log.e("Meeting Scheduler", "Intent isnot run because of a NotSerializableException. "
-                + "Probably the selectedAttendees list which is not serializable.");
+            Log.e(MeetingSchedulerConstants.TAG,
+                "Intent isnot run because of a NotSerializableException. "
+                    + "Probably the selectedAttendees list which is not serializable.");
           }
-          Log.i("Meeting Scheduler",
+          Log.i(MeetingSchedulerConstants.TAG,
               "Find meeting button pressed - successfully launched SelectMeeting activity");
         } else {
           Toast toast = Toast.makeText(getApplicationContext(),
@@ -179,7 +195,7 @@ public class SelectParticipantsActivity extends Activity {
 
   /**
    * Returns the list of currently selected attendees.
-   *
+   * 
    * @return the list of currently selected attendees
    */
   private List<Attendee> getSelectedAttendees() {
