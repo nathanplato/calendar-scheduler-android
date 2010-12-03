@@ -40,6 +40,8 @@ public class SelectParticipantsActivity extends Activity {
   /** ArrayAdapter for the attendees */
   private SelectableAttendeeAdapter attendeeAdapter;
 
+  private EditText editText;
+
   /** Called when the activity is first created. */
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -65,9 +67,6 @@ public class SelectParticipantsActivity extends Activity {
         retrieveAttendee();
       }
     });
-
-    // Adding listener to the EditText filter.
-    addEditTextListener();
 
     // Adding action to the button
     addFindMeetingButtonListener();
@@ -109,10 +108,14 @@ public class SelectParticipantsActivity extends Activity {
    * Populate the list of attendees into the activity's ListView.
    */
   private void setAttendeeListView() {
-    ListView attendeeListView = (ListView) findViewById(R.id.attendee_list);
+    final ListView attendeeListView = (ListView) findViewById(R.id.attendee_list);
 
     attendeeAdapter = new SelectableAttendeeAdapter(this, attendees);
     attendeeAdapter.sort();
+
+    editText = getEditTextFilter();
+
+    attendeeListView.addHeaderView(editText);
 
     attendeeListView.setAdapter(attendeeAdapter);
 
@@ -120,7 +123,8 @@ public class SelectParticipantsActivity extends Activity {
     attendeeListView.setOnItemClickListener(new OnItemClickListener() {
       @Override
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Attendee attendee = attendeeAdapter.getItem(position);
+        // We use position -1 to ignore the header.
+        Attendee attendee = (Attendee) attendeeListView.getItemAtPosition(position);
         attendee.selected = !attendee.selected;
         attendeeAdapter.sort();
       }
@@ -141,8 +145,8 @@ public class SelectParticipantsActivity extends Activity {
   /**
    * Add on text changed listener to filter the attendee list view.
    */
-  private void addEditTextListener() {
-    EditText editText = (EditText) findViewById(R.id.filter);
+  private EditText getEditTextFilter() {
+    editText = (EditText) getLayoutInflater().inflate(R.layout.participants_text_filter, null);
 
     editText.addTextChangedListener(new TextWatcher() {
       @Override
@@ -169,6 +173,8 @@ public class SelectParticipantsActivity extends Activity {
       public void afterTextChanged(Editable s) {
       }
     });
+
+    return editText;
   }
 
   /**
