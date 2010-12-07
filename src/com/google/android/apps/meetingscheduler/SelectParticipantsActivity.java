@@ -47,7 +47,7 @@ public class SelectParticipantsActivity extends Activity {
   /** The Attendee Retriever */
   // TODO: Change this to a fully-working not mock implementation, if this needs
   // asynchronous calls we should probably use an AsyncTask
-  private AttendeeRetriever attendeeRetriever;// = new MockAttendeeRetriever();
+  private AttendeeRetriever attendeeRetriever;
 
   /** List of attendees that are selectable */
   private List<Attendee> attendees = new ArrayList<Attendee>();
@@ -72,19 +72,23 @@ public class SelectParticipantsActivity extends Activity {
           .setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.app_title_select_participants);
     }
 
+    // Adding action to the button
+    addFindMeetingButtonListener();
+
     AccountChooser.getInstance().chooseAccount(this, new AccountChooser.AccountHandler() {
       @Override
       public void handleAccountSelected(Account account) {
-        // Set the attendee retriever with the selected account.
-        attendeeRetriever = new PhoneContactsRetriever(SelectParticipantsActivity.this, account);
+        if (account != null) {
+          // Set the attendee retriever with the selected account.
+          attendeeRetriever = new PhoneContactsRetriever(SelectParticipantsActivity.this, account);
 
-        // Adding selectable attendees
-        retrieveAttendee();
+          // Adding selectable attendees
+          retrieveAttendee();
+        } else {
+          SelectParticipantsActivity.this.finish();
+        }
       }
     });
-
-    // Adding action to the button
-    addFindMeetingButtonListener();
   }
 
   /**
@@ -153,7 +157,6 @@ public class SelectParticipantsActivity extends Activity {
   private void retrieveAttendee() {
     attendees = attendeeRetriever.getPossibleAttendees();
 
-    // TODO: might need to move this in the asynchronous call's callback.
     if (attendees != null)
       setAttendeeListView();
   }

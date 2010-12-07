@@ -21,6 +21,7 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.util.Log;
 
 /**
@@ -114,6 +115,12 @@ public class AccountChooser {
         selectedAccountIndex = which;
         selectedAccount = accounts[selectedAccountIndex];
         handler.handleAccountSelected(selectedAccount);
+      }
+    });
+    builder.setOnCancelListener(new OnCancelListener() {
+      @Override
+      public void onCancel(DialogInterface dialog) {
+        handler.handleAccountSelected(null);
       }
     });
     builder.show();
