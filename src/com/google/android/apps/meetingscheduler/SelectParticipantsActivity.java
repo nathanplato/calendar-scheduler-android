@@ -18,7 +18,6 @@ package com.google.android.apps.meetingscheduler;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -27,15 +26,15 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.Window;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Filter.FilterListener;
 import android.widget.ListView;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Filter.FilterListener;
 
 import java.io.NotSerializableException;
 import java.util.ArrayList;
@@ -218,6 +217,9 @@ public class SelectParticipantsActivity extends Activity {
     return selectedAttendees;
   }
 
+  /**
+   * Initialize the contents of the Activity's options menu.
+   */
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     MenuInflater inflater = getMenuInflater();
@@ -225,6 +227,9 @@ public class SelectParticipantsActivity extends Activity {
     return true;
   }
 
+  /**
+   * Called whenever an item in the options menu is selected.
+   */
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     switch (item.getItemId()) {
@@ -236,6 +241,9 @@ public class SelectParticipantsActivity extends Activity {
     }
   }
   
+  /**
+   * Starts the Set Preferences Activity
+   */
   private void showPreferences() {
     startActivity(SetPreferencesActivity.createViewIntent(getApplicationContext()));
   }
