@@ -16,6 +16,8 @@
 
 package com.google.android.apps.meetingscheduler;
 
+import android.content.Context;
+
 import com.google.api.client.util.DateTime;
 import com.google.api.data.calendar.v2.model.Busy;
 import com.google.api.data.gdata.v2.model.When;
@@ -36,7 +38,7 @@ public class MockBusyTimeRetriever implements BusyTimesRetriever {
 
   @Override
   public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees,
-      Date startDate) {
+      Date startDate, Context context) {
     Map<Attendee, List<Busy>> result = new HashMap<Attendee, List<Busy>>();
     List<List<Busy>> mockBusyTimes = getMockBusyTimes();
     int maxSize = mockBusyTimes.size();

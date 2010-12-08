@@ -16,6 +16,8 @@
 
 package com.google.android.apps.meetingscheduler;
 
+import android.content.Context;
+
 import com.google.api.data.calendar.v2.model.Busy;
 
 import java.util.Date;
@@ -38,6 +40,6 @@ public interface BusyTimesRetriever {
    * @return The list of busy times
    */
   public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees,
-      Date startDate);
+      Date startDate, Context context);
 
 }

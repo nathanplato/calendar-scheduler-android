@@ -162,8 +162,8 @@ public class SelectMeetingTimeActivity extends Activity {
       @Override
       public void onClick(View v) {
         if (auth.getAuthToken() != null) {
-          startDate.add(Calendar.DAY_OF_YEAR, Settings.getInstance()
-              .getTimeSpan());
+          startDate.add(Calendar.DAY_OF_YEAR, Settings.getInstance(
+              getApplicationContext()).getTimeSpan());
           findMeetings();
         }
       }
@@ -209,7 +209,8 @@ public class SelectMeetingTimeActivity extends Activity {
         // and
         // the settings
         final List<AvailableMeetingTime> newTimes = eventTimeRetriever
-            .getAvailableMeetingTime(selectedAttendees, startDate.getTime());
+            .getAvailableMeetingTime(selectedAttendees, startDate.getTime(),
+                getApplicationContext());
 
         // Update the progress bar
         handler.post(new Runnable() {
@@ -237,7 +238,8 @@ public class SelectMeetingTimeActivity extends Activity {
     // Adding the available meeting times to the UI
     ExpandableListView meetingListContainer = (ExpandableListView) findViewById(R.id.meeting_list);
     meetingListContainer.setAdapter(new EventExpandableListAdapter(this,
-        availableMeetingTimes, Settings.getInstance().getMeetingLength()));
+        availableMeetingTimes, Settings.getInstance(getApplicationContext())
+            .getMeetingLength()));
   }
 
 }

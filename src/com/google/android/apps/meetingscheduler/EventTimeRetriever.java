@@ -16,6 +16,8 @@
 
 package com.google.android.apps.meetingscheduler;
 
+import android.content.Context;
+
 import java.util.Date;
 import java.util.List;
 
@@ -37,5 +39,5 @@ public interface EventTimeRetriever {
    * @return The list of available meeting times
    */
   public List<AvailableMeetingTime> getAvailableMeetingTime(
-      List<Attendee> attendees, Date startDate);
+      List<Attendee> attendees, Date startDate, Context context);
 }

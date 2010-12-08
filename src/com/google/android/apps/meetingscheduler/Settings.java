@@ -16,6 +16,10 @@
 
 package com.google.android.apps.meetingscheduler;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
 /**
  * Settings and configuration for the Meeting Scheduler
  * 
@@ -26,39 +30,39 @@ public class Settings {
   private static Settings settings;
 
   /** Length of the meeting to find in minutes */
-  private int meetingLength = 60;
+  private static int meetingLength;
 
   /** How long in the future do we have to look for in days */
-  private int timeSpan = 7;
 
+  private static int timeSpan;
   /**
    * True if we need to take into consideration some working hours instead of
    * matching any time in the day
    */
-  private boolean useWorkingHours = true;
+  private static boolean useWorkingHours;
 
   /**
    * True if don't return results on weekend.
    */
-  private boolean skipWeekends = true;
+  private static boolean skipWeekends;
 
   /**
    * True if we should use the Google Calendar working hour setting of each
    * participant or false if we should just use the times manually set.
    */
-  private boolean useCalendarSettings = false;
+  private static boolean useCalendarSettings;
 
   /**
    * Time the working hours start in hours from midnight (0=midnight, 9.5 =
    * 9:30am, 23 = 11pm)
    */
-  private double workingHoursStart = 9;
+  private static double workingHoursStart;
 
   /**
    * Time the working hours end in hours from midnight (0=midnight), 9.5 =
    * 9:30am, 23 = 11pm)
    */
-  private double workingHoursEnd = 17.5;
+  private static double workingHoursEnd;
 
   /**
    * Can't get Settings directly, use getInstance instead
@@ -70,10 +74,10 @@ public class Settings {
    * Get an instance of the Settings bean
    * @return An instance of Settings
    */
-  public static Settings getInstance() {
+  public static Settings getInstance(Context context) {
     if (settings == null)
       settings = new Settings();
-    
+    getSettings(context);
     return settings;
   }
 
@@ -81,56 +85,68 @@ public class Settings {
     return meetingLength;
   }
 
-  public void setMeetingLength(int meetingLength) {
-    this.meetingLength = meetingLength;
-  }
-
   public int getTimeSpan() {
     return timeSpan;
-  }
-
-  public void setTimeSpan(int timeSpan) {
-    this.timeSpan = timeSpan;
   }
 
   public boolean doUseWorkingHours() {
     return useWorkingHours;
   }
 
-  public void setUseWorkingHours(boolean useWorkingHours) {
-    this.useWorkingHours = useWorkingHours;
-  }
-
   public boolean doSkipWeekends() {
     return skipWeekends;
-  }
-
-  public void setSkipWeekends(boolean skipWeekends) {
-    this.skipWeekends = skipWeekends;
   }
 
   public boolean doUseCalendarSettings() {
     return useCalendarSettings;
   }
 
-  public void setUseCalendarSettings(boolean useCalendarSettings) {
-    this.useCalendarSettings = useCalendarSettings;
-  }
-
   public double getWorkingHoursStart() {
     return workingHoursStart;
-  }
-
-  public void setWorkingHoursStart(double workingHoursStart) {
-    this.workingHoursStart = workingHoursStart;
   }
 
   public double getWorkingHoursEnd() {
     return workingHoursEnd;
   }
-
-  public void setWorkingHoursEnd(double workingHoursEnd) {
-    this.workingHoursEnd = workingHoursEnd;
+  
+  private static void getSettings(Context context) {
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+    
+    String meeting_length_list_pref = prefs.getString(context
+        .getString(R.string.meeting_length_list_pref), context
+        .getString(R.string.meeting_length_default_value));
+    meetingLength = Integer.parseInt(meeting_length_list_pref);
+    
+    String time_span_list_pref = prefs.getString(context.getString(R.string.time_span_list_pref),
+        context.getString(R.string.time_span_default_value));
+    timeSpan = Integer.parseInt(time_span_list_pref);
+    
+    Boolean skip_weekends_chkbox_pref = prefs.getBoolean(context
+        .getString(R.string.skip_weekends_chkbox_pref), Boolean
+        .getBoolean(context.getString(R.string.skip_weekends_default_value)));
+    skipWeekends = skip_weekends_chkbox_pref.booleanValue();
+    
+    Boolean use_working_hours_chkbox_pref = prefs.getBoolean(context
+        .getString(R.string.use_working_hours_chkbox_pref),
+        Boolean.getBoolean(context
+            .getString(R.string.use_working_hours_default_value)));
+    useWorkingHours = use_working_hours_chkbox_pref.booleanValue();
+    
+    Boolean use_calendar_settings_chkbox_pref = prefs.getBoolean(context
+        .getString(R.string.use_calendar_settings_chkbox_pref), Boolean
+        .getBoolean(context
+            .getString(R.string.use_calendar_settings_default_value)));
+    useCalendarSettings = use_calendar_settings_chkbox_pref.booleanValue();
+    
+    String working_hours_start_text_pref = prefs.getString(context
+        .getString(R.string.working_hours_start_text_pref), context
+        .getString(R.string.working_hours_start_default_value));
+    workingHoursStart = Double.parseDouble(working_hours_start_text_pref);
+    
+    String working_hours_end_text_pref = prefs.getString(context
+        .getString(R.string.working_hours_end_text_pref), context
+        .getString(R.string.working_hours_end_default_value));
+    workingHoursEnd = Double.parseDouble(working_hours_end_text_pref);
   }
 
 }

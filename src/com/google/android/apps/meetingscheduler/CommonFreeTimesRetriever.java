@@ -16,6 +16,8 @@
 
 package com.google.android.apps.meetingscheduler;
 
+import android.content.Context;
+
 import com.google.api.client.util.DateTime;
 import com.google.api.data.calendar.v2.model.Busy;
 
@@ -67,22 +69,23 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
    * com.google.android.apps.meetingscheduler.Settings)
    */
   @Override
-  public List<AvailableMeetingTime> getAvailableMeetingTime(List<Attendee> attendees, Date startDate) {
-    Map<Attendee, List<Busy>> busyTimes = busyTimeRetriever.getBusyTimes(attendees, startDate);
+  public List<AvailableMeetingTime> getAvailableMeetingTime(
+      List<Attendee> attendees, Date startDate, Context context) {
+    Map<Attendee, List<Busy>> busyTimes = busyTimeRetriever.getBusyTimes(attendees, startDate, context);
     Map<Date, List<Busy>> sortedBusyTimes = filterByDate(busyTimes);
     List<AvailableMeetingTime> result = new ArrayList<AvailableMeetingTime>();
 
-    addMissingDays(sortedBusyTimes, startDate, Settings.getInstance().getTimeSpan());
+    addMissingDays(sortedBusyTimes, startDate, Settings.getInstance(context).getTimeSpan());
     for (Map.Entry<Date, List<Busy>> busyTime : sortedBusyTimes.entrySet()) {
       List<AvailableMeetingTime> availableMeetings;
 
       mergeBusyTimes(busyTime.getValue());
       availableMeetings = findAvailableMeetings(busyTime.getValue(),
           new DateTime(busyTime.getKey()));
-      filterAvailableMeetings(availableMeetings, Settings.getInstance().doUseWorkingHours(),
-          getDate(new DateTime(busyTime.getKey().getTime()), Settings.getInstance().getWorkingHoursStart()),
-          getDate(new DateTime(busyTime.getKey().getTime()), Settings.getInstance().getWorkingHoursEnd()),
-          Settings.getInstance().getMeetingLength());
+      filterAvailableMeetings(availableMeetings, Settings.getInstance(context).doUseWorkingHours(),
+          getDate(new DateTime(busyTime.getKey().getTime()), Settings.getInstance(context).getWorkingHoursStart()),
+          getDate(new DateTime(busyTime.getKey().getTime()), Settings.getInstance(context).getWorkingHoursEnd()),
+          Settings.getInstance(context).getMeetingLength());
       addAttendees(availableMeetings, attendees);
 
       result.addAll(availableMeetings);

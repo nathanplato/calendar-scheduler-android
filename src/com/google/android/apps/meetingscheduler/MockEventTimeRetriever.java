@@ -16,6 +16,8 @@
 
 package com.google.android.apps.meetingscheduler;
 
+import android.content.Context;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -29,7 +31,7 @@ import java.util.List;
 public class MockEventTimeRetriever implements EventTimeRetriever {
 
   public List<AvailableMeetingTime> getAvailableMeetingTime(
-      List<Attendee> attendees, Date startDate) {
+      List<Attendee> attendees, Date startDate, Context context) {
     List<AvailableMeetingTime> availableMeetingTimes = new ArrayList<AvailableMeetingTime>();
     availableMeetingTimes.add(new AvailableMeetingTime(new GregorianCalendar(2010, 11, 20, 10, 00)
         .getTime(), new GregorianCalendar(2010, 11, 20, 11, 00).getTime(), attendees));

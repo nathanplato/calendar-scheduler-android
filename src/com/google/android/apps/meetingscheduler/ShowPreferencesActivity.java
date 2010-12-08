@@ -42,52 +42,11 @@ public class ShowPreferencesActivity extends PreferenceActivity {
     return intent;
   }
 
-  /** Called when this Activity is first created **/
+  /** Initialise this activity **/
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     addPreferencesFromResource(R.xml.preferences);
-
-    SharedPreferences prefs = PreferenceManager
-        .getDefaultSharedPreferences(getBaseContext());
-    String meetingLength = prefs.getString(
-        getString(R.string.meeting_length_list_pref),
-        getString(R.string.meeting_length_default_value));
-    Settings.getInstance().setMeetingLength(Integer.parseInt(meetingLength));
-
-    String timeSpan = prefs.getString(getString(R.string.time_span_list_pref),
-        getString(R.string.time_span_default_value));
-    Settings.getInstance().setTimeSpan(Integer.parseInt(timeSpan));
-
-    Boolean skipWeekends = prefs.getBoolean(
-        getString(R.string.skip_weekends_chkbox_pref), Boolean
-            .getBoolean(getString(R.string.skip_weekends_default_value)));
-    Settings.getInstance().setSkipWeekends(skipWeekends.booleanValue());
-
-    Boolean useWorkingHours = prefs.getBoolean(this
-        .getString(R.string.use_working_hours_chkbox_pref), Boolean
-        .getBoolean(getString(R.string.use_working_hours_default_value)));
-    Settings.getInstance().setUseWorkingHours(useWorkingHours.booleanValue());
-
-    Boolean useCalendarSettings = prefs
-        .getBoolean(
-            getString(R.string.use_calendar_settings_chkbox_pref),
-            Boolean
-                .getBoolean(getString(R.string.use_calendar_settings_default_value)));
-    Settings.getInstance().setUseCalendarSettings(
-        useCalendarSettings.booleanValue());
-
-    String workingHoursStart = prefs.getString(
-        getString(R.string.working_hours_start_text_pref),
-        getString(R.string.working_hours_start_default_value));
-    Settings.getInstance().setWorkingHoursStart(
-        Double.parseDouble(workingHoursStart));
-
-    String workingHoursEnd = prefs.getString(
-        getString(R.string.working_hours_end_text_pref),
-        getString(R.string.working_hours_end_default_value));
-    Settings.getInstance().setWorkingHoursEnd(
-        Double.parseDouble(workingHoursEnd));
   }
   
 }

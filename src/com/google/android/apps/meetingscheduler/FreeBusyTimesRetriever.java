@@ -16,6 +16,7 @@
 
 package com.google.android.apps.meetingscheduler;
 
+import android.content.Context;
 import android.util.Log;
 
 import com.google.api.client.util.DateTime;
@@ -64,12 +65,13 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
   }
 
   @Override
-  public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees, Date startDate) {
+  public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees,
+      Date startDate, Context context) {
     Map<Attendee, List<Busy>> result = new HashMap<Attendee, List<Busy>>();
     Map<String, Attendee> batchIds = new HashMap<String, Attendee>();
     CalendarService service = getService();
     FreeBusyList batchRequest = createBatchRequest(attendees, batchIds);
-    CalendarUrl url = createBatchUrl(startDate, Settings.getInstance().getTimeSpan());
+    CalendarUrl url = createBatchUrl(startDate, Settings.getInstance(context).getTimeSpan());
 
     try {
       FreeBusyList freeBusyFeed = service.executeBatch(batchRequest, url);
