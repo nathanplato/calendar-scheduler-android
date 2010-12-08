@@ -33,8 +33,8 @@ public class Settings {
   private static int meetingLength;
 
   /** How long in the future do we have to look for in days */
-
   private static int timeSpan;
+
   /**
    * True if we need to take into consideration some working hours instead of
    * matching any time in the day
@@ -110,15 +110,17 @@ public class Settings {
   }
   
   private static void getSettings(Context context) {
-    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+    SharedPreferences prefs = PreferenceManager
+        .getDefaultSharedPreferences(context);
     
     String meeting_length_list_pref = prefs.getString(context
         .getString(R.string.meeting_length_list_pref), context
         .getString(R.string.meeting_length_default_value));
     meetingLength = Integer.parseInt(meeting_length_list_pref);
     
-    String time_span_list_pref = prefs.getString(context.getString(R.string.time_span_list_pref),
-        context.getString(R.string.time_span_default_value));
+    String time_span_list_pref = prefs.getString(context
+        .getString(R.string.time_span_list_pref), context
+        .getString(R.string.time_span_default_value));
     timeSpan = Integer.parseInt(time_span_list_pref);
     
     Boolean skip_weekends_chkbox_pref = prefs.getBoolean(context

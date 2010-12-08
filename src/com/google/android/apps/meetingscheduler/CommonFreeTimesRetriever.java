@@ -75,17 +75,18 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
     Map<Date, List<Busy>> sortedBusyTimes = filterByDate(busyTimes);
     List<AvailableMeetingTime> result = new ArrayList<AvailableMeetingTime>();
 
-    addMissingDays(sortedBusyTimes, startDate, Settings.getInstance(context).getTimeSpan());
+    Settings settings = Settings.getInstance(context);
+    addMissingDays(sortedBusyTimes, startDate, settings.getTimeSpan());
     for (Map.Entry<Date, List<Busy>> busyTime : sortedBusyTimes.entrySet()) {
       List<AvailableMeetingTime> availableMeetings;
 
       mergeBusyTimes(busyTime.getValue());
       availableMeetings = findAvailableMeetings(busyTime.getValue(),
           new DateTime(busyTime.getKey()));
-      filterAvailableMeetings(availableMeetings, Settings.getInstance(context).doUseWorkingHours(),
-          getDate(new DateTime(busyTime.getKey().getTime()), Settings.getInstance(context).getWorkingHoursStart()),
-          getDate(new DateTime(busyTime.getKey().getTime()), Settings.getInstance(context).getWorkingHoursEnd()),
-          Settings.getInstance(context).getMeetingLength());
+      filterAvailableMeetings(availableMeetings, settings.doUseWorkingHours(),
+          getDate(new DateTime(busyTime.getKey().getTime()), settings.getWorkingHoursStart()),
+          getDate(new DateTime(busyTime.getKey().getTime()), settings.getWorkingHoursEnd()),
+          settings.getMeetingLength());
       addAttendees(availableMeetings, attendees);
 
       result.addAll(availableMeetings);

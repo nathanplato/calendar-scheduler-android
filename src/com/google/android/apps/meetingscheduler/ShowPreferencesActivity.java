@@ -18,10 +18,8 @@ package com.google.android.apps.meetingscheduler;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
 
 /**
  * Activity screen to show and set the app preferences
