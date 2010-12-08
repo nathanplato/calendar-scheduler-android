@@ -32,11 +32,10 @@ public interface EventTimeRetriever {
    * 
    * @param attendees The list of attendees for which we want to find meeting
    *          times
-   * @param settings The additional restrictions on the meeting times.
    * @param startDate the date from which to start querying available meeting
    *          times.
    * @return The list of available meeting times
    */
-  public List<AvailableMeetingTime> getAvailableMeetingTime(List<Attendee> attendees,
-      Settings settings, Date startDate);
+  public List<AvailableMeetingTime> getAvailableMeetingTime(
+      List<Attendee> attendees, Date startDate);
 }

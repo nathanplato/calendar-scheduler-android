@@ -2,21 +2,21 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
 	android:key="@string/preferences_screen" android:title="@string/preferences">
 
-	<EditTextPreference android:title="@string/time_span"
-		android:summary="@string/time_span_long" android:key="@string/time_span_chkbox_pref"
-		android:defaultValue="@string/time_span_default_value"></EditTextPreference>
+	<ListPreference android:entries="@array/meeting_length_array_names" android:entryValues="@array/meeting_length_array_values" android:title="@string/meeting_length" android:key="@string/meeting_length_list_pref" android:defaultValue="@string/meeting_length_default_value"></ListPreference>
+	<ListPreference android:title="@string/time_span"
+		android:summary="@string/time_span_long" android:entries="@array/time_span_array_names" android:entryValues="@array/time_span_array_values" android:key="@string/time_span_list_pref" android:defaultValue="@string/time_span_default_value"></ListPreference>
 	<CheckBoxPreference android:summary="@string/skip_weekends_long"
-		android:title="@string/skip_weekends" android:key="@string/skip_weekends_chkbox_pref"></CheckBoxPreference>
+		android:title="@string/skip_weekends" android:key="@string/skip_weekends_chkbox_pref" android:defaultValue="@string/skip_weekends_default_value"></CheckBoxPreference>
 
-<PreferenceCategory android:title="@string/working_hours_pref"
-	android:key="@string/working_hours_pref_category">
-	<CheckBoxPreference android:title="@string/use_working_hours"
-		android:key="@string/use_working_hours_chkbox_pref" android:summary="@string/use_working_hours_long"></CheckBoxPreference>
-	<CheckBoxPreference android:key="@string/use_working_hours_setting_pref"
-		android:title="@string/use_working_hours_setting" android:summary="@string/use_working_hours_setting_long"></CheckBoxPreference>
-	<EditTextPreference android:summary="@string/working_hours_start_long"
-		android:title="@string/working_hours_start" android:key="@string/working_hours_start_pref"></EditTextPreference>
-	<EditTextPreference android:title="@string/working_hours_end"
-		android:key="@string/working_hours_end_pref" android:summary="@string/working_hours_end_long"></EditTextPreference>
-</PreferenceCategory>
+	<PreferenceCategory android:title="@string/working_hours_category" android:key="@string/working_hours_pref_category">
+		<CheckBoxPreference android:title="@string/use_working_hours"
+			android:summary="@string/use_working_hours_long" android:key="@string/use_working_hours_chkbox_pref" android:defaultValue="@string/use_working_hours_default_value"></CheckBoxPreference>
+		<CheckBoxPreference android:key="@string/use_calendar_settings_chkbox_pref" android:summary="@string/use_calendar_settings_long" android:title="@string/use_calendar_settings" android:defaultValue="@string/use_calendar_settings_default_value"></CheckBoxPreference>
+		<EditTextPreference android:summary="@string/working_hours_start_long"
+			android:title="@string/working_hours_start" android:key="@string/working_hours_start_text_pref" android:defaultValue="@string/working_hours_start_default_value"></EditTextPreference>
+		<EditTextPreference android:title="@string/working_hours_end"
+			android:summary="@string/working_hours_end_long" android:key="@string/working_hours_end_text_pref" android:defaultValue="@string/working_hours_end_default_value"></EditTextPreference>
+	</PreferenceCategory>
+
+
 </PreferenceScreen>

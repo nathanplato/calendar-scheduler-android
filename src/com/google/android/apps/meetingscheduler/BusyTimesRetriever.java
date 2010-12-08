@@ -34,11 +34,10 @@ public interface BusyTimesRetriever {
    * 
    * @param attendees The list of attendees for which to retrieve the busy
    *          times.
-   * @param settings The additional restrictions on the busy times.
    * @param startDate the date from which to start querying busy times.
    * @return The list of busy times
    */
-  public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees, Settings settings,
+  public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees,
       Date startDate);
 
 }

@@ -67,24 +67,22 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
    * com.google.android.apps.meetingscheduler.Settings)
    */
   @Override
-  public List<AvailableMeetingTime> getAvailableMeetingTime(List<Attendee> attendees,
-      Settings settings, Date startDate) {
-    Map<Attendee, List<Busy>> busyTimes = busyTimeRetriever.getBusyTimes(attendees, settings,
-        startDate);
+  public List<AvailableMeetingTime> getAvailableMeetingTime(List<Attendee> attendees, Date startDate) {
+    Map<Attendee, List<Busy>> busyTimes = busyTimeRetriever.getBusyTimes(attendees, startDate);
     Map<Date, List<Busy>> sortedBusyTimes = filterByDate(busyTimes);
     List<AvailableMeetingTime> result = new ArrayList<AvailableMeetingTime>();
 
-    addMissingDays(sortedBusyTimes, startDate, settings.timeSpan);
+    addMissingDays(sortedBusyTimes, startDate, Settings.getInstance().getTimeSpan());
     for (Map.Entry<Date, List<Busy>> busyTime : sortedBusyTimes.entrySet()) {
       List<AvailableMeetingTime> availableMeetings;
 
       mergeBusyTimes(busyTime.getValue());
       availableMeetings = findAvailableMeetings(busyTime.getValue(),
           new DateTime(busyTime.getKey()));
-      filterAvailableMeetings(availableMeetings, settings.useWorkingHours,
-          getDate(new DateTime(busyTime.getKey().getTime()), settings.workingHoursStart),
-          getDate(new DateTime(busyTime.getKey().getTime()), settings.workingHoursEnd),
-          settings.meetingLength);
+      filterAvailableMeetings(availableMeetings, Settings.getInstance().doUseWorkingHours(),
+          getDate(new DateTime(busyTime.getKey().getTime()), Settings.getInstance().getWorkingHoursStart()),
+          getDate(new DateTime(busyTime.getKey().getTime()), Settings.getInstance().getWorkingHoursEnd()),
+          Settings.getInstance().getMeetingLength());
       addAttendees(availableMeetings, attendees);
 
       result.addAll(availableMeetings);

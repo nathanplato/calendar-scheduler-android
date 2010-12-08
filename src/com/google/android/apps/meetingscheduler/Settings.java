@@ -22,40 +22,115 @@ package com.google.android.apps.meetingscheduler;
  * @author Nicolas Garnier
  */
 public class Settings {
+  
+  private static Settings settings;
 
   /** Length of the meeting to find in minutes */
-  public int meetingLength = 60;
+  private int meetingLength = 60;
 
   /** How long in the future do we have to look for in days */
-  public int timeSpan = 7;
+  private int timeSpan = 7;
 
   /**
    * True if we need to take into consideration some working hours instead of
    * matching any time in the day
    */
-  public boolean useWorkingHours = true;
+  private boolean useWorkingHours = true;
 
   /**
    * True if don't return results on weekend.
    */
-  public boolean skipWeekends = true;
+  private boolean skipWeekends = true;
 
   /**
    * True if we should use the Google Calendar working hour setting of each
    * participant or false if we should just use the times manually set.
    */
-  public boolean useWorkingHoursSetting = false;
+  private boolean useCalendarSettings = false;
 
   /**
    * Time the working hours start in hours from midnight (0=midnight, 9.5 =
    * 9:30am, 23 = 11pm)
    */
-  public double workingHoursStart = 9;
+  private double workingHoursStart = 9;
 
   /**
    * Time the working hours end in hours from midnight (0=midnight), 9.5 =
    * 9:30am, 23 = 11pm)
    */
-  public double workingHoursEnd = 17.5;
+  private double workingHoursEnd = 17.5;
+
+  /**
+   * Can't get Settings directly, use getInstance instead
+   */
+  private Settings() {
+  }
+  
+  /**
+   * Get an instance of the Settings bean
+   * @return An instance of Settings
+   */
+  public static Settings getInstance() {
+    if (settings == null)
+      settings = new Settings();
+    
+    return settings;
+  }
+
+  public int getMeetingLength() {
+    return meetingLength;
+  }
+
+  public void setMeetingLength(int meetingLength) {
+    this.meetingLength = meetingLength;
+  }
+
+  public int getTimeSpan() {
+    return timeSpan;
+  }
+
+  public void setTimeSpan(int timeSpan) {
+    this.timeSpan = timeSpan;
+  }
+
+  public boolean doUseWorkingHours() {
+    return useWorkingHours;
+  }
+
+  public void setUseWorkingHours(boolean useWorkingHours) {
+    this.useWorkingHours = useWorkingHours;
+  }
+
+  public boolean doSkipWeekends() {
+    return skipWeekends;
+  }
+
+  public void setSkipWeekends(boolean skipWeekends) {
+    this.skipWeekends = skipWeekends;
+  }
+
+  public boolean doUseCalendarSettings() {
+    return useCalendarSettings;
+  }
+
+  public void setUseCalendarSettings(boolean useCalendarSettings) {
+    this.useCalendarSettings = useCalendarSettings;
+  }
+
+  public double getWorkingHoursStart() {
+    return workingHoursStart;
+  }
+
+  public void setWorkingHoursStart(double workingHoursStart) {
+    this.workingHoursStart = workingHoursStart;
+  }
+
+  public double getWorkingHoursEnd() {
+    return workingHoursEnd;
+  }
+
+  public void setWorkingHoursEnd(double workingHoursEnd) {
+    this.workingHoursEnd = workingHoursEnd;
+  }
 
 }

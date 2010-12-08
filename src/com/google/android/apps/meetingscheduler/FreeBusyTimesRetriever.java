@@ -64,13 +64,12 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
   }
 
   @Override
-  public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees, Settings settings,
-      Date startDate) {
+  public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees, Date startDate) {
     Map<Attendee, List<Busy>> result = new HashMap<Attendee, List<Busy>>();
     Map<String, Attendee> batchIds = new HashMap<String, Attendee>();
     CalendarService service = getService();
     FreeBusyList batchRequest = createBatchRequest(attendees, batchIds);
-    CalendarUrl url = createBatchUrl(startDate, settings.timeSpan);
+    CalendarUrl url = createBatchUrl(startDate, Settings.getInstance().getTimeSpan());
 
     try {
       FreeBusyList freeBusyFeed = service.executeBatch(batchRequest, url);

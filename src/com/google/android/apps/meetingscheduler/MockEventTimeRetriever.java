@@ -28,8 +28,8 @@ import java.util.List;
  */
 public class MockEventTimeRetriever implements EventTimeRetriever {
 
-  public List<AvailableMeetingTime> getAvailableMeetingTime(List<Attendee> attendees,
-      Settings settings, Date startDate) {
+  public List<AvailableMeetingTime> getAvailableMeetingTime(
+      List<Attendee> attendees, Date startDate) {
     List<AvailableMeetingTime> availableMeetingTimes = new ArrayList<AvailableMeetingTime>();
     availableMeetingTimes.add(new AvailableMeetingTime(new GregorianCalendar(2010, 11, 20, 10, 00)
         .getTime(), new GregorianCalendar(2010, 11, 20, 11, 00).getTime(), attendees));

@@ -35,7 +35,7 @@ import java.util.Map;
 public class MockBusyTimeRetriever implements BusyTimesRetriever {
 
   @Override
-  public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees, Settings settings,
+  public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees,
       Date startDate) {
     Map<Attendee, List<Busy>> result = new HashMap<Attendee, List<Busy>>();
     List<List<Busy>> mockBusyTimes = getMockBusyTimes();

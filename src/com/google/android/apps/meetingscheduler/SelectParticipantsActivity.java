@@ -245,7 +245,7 @@ public class SelectParticipantsActivity extends Activity {
    * Starts the Set Preferences Activity
    */
   private void showPreferences() {
-    startActivity(SetPreferencesActivity.createViewIntent(getApplicationContext()));
+    startActivity(ShowPreferencesActivity.createViewIntent(getApplicationContext()));
   }
 
 }
