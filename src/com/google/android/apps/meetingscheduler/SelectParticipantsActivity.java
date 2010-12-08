@@ -32,6 +32,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Filter.FilterListener;
@@ -71,27 +72,29 @@ public class SelectParticipantsActivity extends Activity {
 
     // Custom title bar
     if (customTitleSupported) {
-      getWindow()
-          .setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.app_title_select_participants);
+      getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE,
+          R.layout.app_title_select_participants);
     }
 
     // Adding action to the button
     addFindMeetingButtonListener();
 
-    AccountChooser.getInstance().chooseAccount(this, new AccountChooser.AccountHandler() {
-      @Override
-      public void handleAccountSelected(Account account) {
-        if (account != null) {
-          // Set the attendee retriever with the selected account.
-          attendeeRetriever = new PhoneContactsRetriever(SelectParticipantsActivity.this, account);
+    AccountChooser.getInstance().chooseAccount(this,
+        new AccountChooser.AccountHandler() {
+          @Override
+          public void handleAccountSelected(Account account) {
+            if (account != null) {
+              // Set the attendee retriever with the selected account.
+              attendeeRetriever = new PhoneContactsRetriever(
+                  SelectParticipantsActivity.this, account);
 
-          // Adding selectable attendees
-          retrieveAttendee();
-        } else {
-          SelectParticipantsActivity.this.finish();
-        }
-      }
-    });
+              // Adding selectable attendees
+              retrieveAttendee();
+            } else {
+              SelectParticipantsActivity.this.finish();
+            }
+          }
+        });
   }
 
   /**
@@ -103,24 +106,28 @@ public class SelectParticipantsActivity extends Activity {
       public void onClick(View v) {
         List<Attendee> selectedAttendees = getSelectedAttendees();
         if (selectedAttendees.size() > 0) {
-          Log.i(MeetingSchedulerConstants.TAG,
-              "Find meeting button pressed - about to launch SelectMeeting activity");
+          Log
+              .i(MeetingSchedulerConstants.TAG,
+                  "Find meeting button pressed - about to launch SelectMeeting activity");
 
           // the results are called on widgetActivityCallback
           try {
-            startActivity(SelectMeetingTimeActivity.createViewIntent(getApplicationContext(),
-                selectedAttendees));
+            startActivity(SelectMeetingTimeActivity.createViewIntent(
+                getApplicationContext(), selectedAttendees));
 
           } catch (NotSerializableException e) {
-            Log.e(MeetingSchedulerConstants.TAG,
-                "Intent isnot run because of a NotSerializableException. "
-                    + "Probably the selectedAttendees list which is not serializable.");
+            Log
+                .e(
+                    MeetingSchedulerConstants.TAG,
+                    "Intent is not run because of a NotSerializableException. "
+                        + "Probably the selectedAttendees list which is not serializable.");
           }
-          Log.i(MeetingSchedulerConstants.TAG,
-              "Find meeting button pressed - successfully launched SelectMeeting activity");
+          Log
+              .i(MeetingSchedulerConstants.TAG,
+                  "Find meeting button pressed - successfully launched SelectMeeting activity");
         } else {
           Toast toast = Toast.makeText(getApplicationContext(),
-              "You have to select at least 1 participant", 1000);
+              "You must select at least 1 participant", 1000);
           toast.show();
         }
       }
@@ -145,9 +152,11 @@ public class SelectParticipantsActivity extends Activity {
     // Adding click event to attendees Widgets
     attendeeListView.setOnItemClickListener(new OnItemClickListener() {
       @Override
-      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+      public void onItemClick(AdapterView<?> parent, View view, int position,
+          long id) {
         // We use position -1 to ignore the header.
-        Attendee attendee = (Attendee) attendeeListView.getItemAtPosition(position);
+        Attendee attendee = (Attendee) attendeeListView
+            .getItemAtPosition(position);
         attendee.selected = !attendee.selected;
         attendeeAdapter.sort();
       }
@@ -168,7 +177,8 @@ public class SelectParticipantsActivity extends Activity {
    * Add on text changed listener to filter the attendee list view.
    */
   private EditText getEditTextFilter() {
-    editText = (EditText) getLayoutInflater().inflate(R.layout.participants_text_filter, null);
+    editText = (EditText) getLayoutInflater().inflate(
+        R.layout.participants_text_filter, null);
 
     editText.addTextChangedListener(new TextWatcher() {
       @Override
@@ -188,7 +198,8 @@ public class SelectParticipantsActivity extends Activity {
       }
 
       @Override
-      public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+      public void beforeTextChanged(CharSequence s, int start, int count,
+          int after) {
       }
 
       @Override
@@ -240,12 +251,62 @@ public class SelectParticipantsActivity extends Activity {
       return super.onOptionsItemSelected(item);
     }
   }
-  
+
   /**
-   * Starts the Set Preferences Activity
+   * Starts the ShowPreferencesActivity
    */
   private void showPreferences() {
-    startActivity(ShowPreferencesActivity.createViewIntent(getApplicationContext()));
+    startActivity(ShowPreferencesActivity
+        .createViewIntent(getApplicationContext()));
+    Log.i(MeetingSchedulerConstants.TAG,
+        "Successfully launched ShowPreferencesActivity");
+  }
+
+  /**
+   * Sets the help text beside the Find Meetings button
+   */
+  private void setFindMeetingButtonText() {
+    Settings settings = Settings.getInstance(getApplicationContext());
+    StringBuilder string = new StringBuilder();
+
+    int meetingLength = settings.getMeetingLength();
+    String meetingLengthText = null;
+    if (meetingLength < 60) {
+      meetingLengthText = meetingLength + " minute";
+    } else {
+      meetingLengthText = (float) meetingLength / 60 + " hour";
+    }
+    string.append("Fix " + meetingLengthText + " meetings\n");
+
+    int timeSpan = settings.getTimeSpan();
+    String timeSpanText = null;
+    if (timeSpan == 7 || timeSpan == 14) {
+      timeSpanText = timeSpan / 7 + " week(s)";
+    } else {
+      timeSpanText = "the next one month";
+    }
+    string.append("over " + timeSpanText + "\n");
+
+    boolean useWorkingHours = settings.doUseWorkingHours();
+    String useWorkingHoursText = null;
+    if (useWorkingHours) {
+      useWorkingHoursText = "within working hours";
+    } else {
+      useWorkingHoursText = "regardless of working hours";
+    }
+    string.append(useWorkingHoursText);
+    
+    TextView settingsText = (TextView) findViewById(R.id.find_time_button_text);
+    settingsText.setText(string.toString());
+  }
+
+  /**
+   * Update the settings text whenever this activity resumes
+   */
+  @Override
+  protected void onResume() {
+    super.onResume();
+    setFindMeetingButtonText();
   }
 
 }

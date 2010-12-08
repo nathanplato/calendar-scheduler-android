@@ -19,7 +19,7 @@
 	<string name="settings">Settings</string>
 	<string name="preferences">Preferences</string>
 	<string name="time_span">Time span</string>
-	<string name="time_span_long">Number of days to look ahead</string>
+	<string name="time_span_long">Number of weeks to look ahead</string>
 	<string name="time_span_default_value">This week</string>
 	<string name="skip_weekends">Skip weekends</string>
 	<string name="skip_weekends_long">No working weekends</string>
@@ -31,7 +31,7 @@
 	<string name="use_calendar_settings_long">Use working hours settings from Google Calendar
 	</string>
 	<string name="preferences_screen">preferences_screen</string>
-	<string name="meeting_length">Meeting length</string>
+	<string name="meeting_length">Meeting duration</string>
 	<string name="working_hours_category">Working hours</string>
 	<string name="meeting_length_list_pref">meeting_length_list_pref</string>
 	<string name="time_span_list_pref">time_span_list_pref</string>

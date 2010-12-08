@@ -109,6 +109,10 @@ public class Settings {
     return workingHoursEnd;
   }
   
+  /**
+   * Gets the settings from the Preferences screen
+   * @param context The application context
+   */
   private static void getSettings(Context context) {
     SharedPreferences prefs = PreferenceManager
         .getDefaultSharedPreferences(context);
