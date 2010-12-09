@@ -21,7 +21,7 @@
 	<string name="preferences">Preferences</string>
 	<string name="time_span">Time span</string>
 	<string name="time_span_summary">Number of weeks to look ahead</string>
-	<string name="time_span_default_value">This week</string>
+	<string name="time_span_default_value">7</string>
 	<string name="skip_weekends">Skip weekends</string>
 	<string name="skip_weekends_summary_checked">No working weekends</string>
 	<string name="skip_weekends_summary_unchecked">Available on weekends</string>

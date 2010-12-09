@@ -28,8 +28,10 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Compute the common free times from the busy times fetched from the
@@ -69,14 +71,18 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
    * com.google.android.apps.meetingscheduler.Settings)
    */
   @Override
-  public List<AvailableMeetingTime> getAvailableMeetingTime(
-      List<Attendee> attendees, Date startDate, Context context) {
-    Map<Attendee, List<Busy>> busyTimes = busyTimeRetriever.getBusyTimes(attendees, startDate, context);
+  public List<AvailableMeetingTime> getAvailableMeetingTime(List<Attendee> attendees,
+      Date startDate, Context context) {
+    Map<Attendee, List<Busy>> busyTimes = busyTimeRetriever.getBusyTimes(attendees, startDate,
+        context);
     Map<Date, List<Busy>> sortedBusyTimes = filterByDate(busyTimes);
     List<AvailableMeetingTime> result = new ArrayList<AvailableMeetingTime>();
 
     Settings settings = Settings.getInstance(context);
     addMissingDays(sortedBusyTimes, startDate, settings.getTimeSpan());
+    if (settings.doSkipWeekends()) {
+      removeWeekends(sortedBusyTimes);
+    }
     for (Map.Entry<Date, List<Busy>> busyTime : sortedBusyTimes.entrySet()) {
       List<AvailableMeetingTime> availableMeetings;
 
@@ -135,6 +141,25 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
       if (!busyTimes.containsKey(calendar.getTime()))
         busyTimes.put(calendar.getTime(), new ArrayList<Busy>());
       calendar.add(Calendar.DAY_OF_YEAR, 1);
+    }
+  }
+
+  /**
+   * Remove weekends from the busy times.
+   * 
+   * @param sortedBusyTimes The busy times from which to remove the weekends.
+   */
+  private void removeWeekends(Map<Date, List<Busy>> sortedBusyTimes) {
+    Set<Date> keys = new HashSet<Date>(sortedBusyTimes.keySet());
+
+    for (Date day : keys) {
+      Calendar calendar = new GregorianCalendar();
+
+      calendar.setTime(day);
+      if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
+          || calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+        sortedBusyTimes.remove(day);
+      }
     }
   }
 
