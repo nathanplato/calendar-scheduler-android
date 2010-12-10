@@ -16,16 +16,22 @@
 
 package com.google.android.apps.meetingscheduler;
 
+import android.app.Dialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
-import android.preference.EditTextPreference;
 import android.preference.ListPreference;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.preference.Preference.OnPreferenceClickListener;
+import android.text.format.DateFormat;
+import android.util.Log;
+import android.widget.TimePicker;
 
 /**
  * Activity screen to show and set the app preferences
@@ -44,9 +50,18 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
   private String useWorkingHoursKey;
   private String useCalendarSettingsKey;
   private CheckBoxPreference useCalendarSettingsPref;
-  private EditTextPreference workingHoursStartPref;
-  private EditTextPreference workingHoursEndPref;
+  private String workingHoursStartKey;
+  private Preference workingHoursStartPref;
+  private String workingHoursEndKey;
+  private Preference workingHoursEndPref;
   private SharedPreferences preferences;
+  private final int WORKING_HOURS_START_ID = 0;
+  private final int WORKING_HOURS_END_ID = 1;
+  private boolean is24HourFormat = false;
+  private int workingHoursStartHours;
+  private int workingHoursStartMinutes;
+  private int workingHoursEndHours;
+  private int workingHoursEndMinutes;
 
   /**
    * Returns an Intent that will display this Activity.
@@ -75,22 +90,46 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
     meetingLengthKey = getString(R.string.meeting_length_list_pref);
     meetingLengthPref = (ListPreference) getPreferenceScreen().findPreference(
         meetingLengthKey);
+
     timeSpanKey = getString(R.string.time_span_list_pref);
     timeSpanPref = (ListPreference) getPreferenceScreen().findPreference(
         timeSpanKey);
+
     skipWeekendsKey = getString(R.string.skip_weekends_chkbox_pref);
     skipWeekendsPref = (CheckBoxPreference) getPreferenceScreen()
         .findPreference(skipWeekendsKey);
+
     useWorkingHoursKey = getString(R.string.use_working_hours_chkbox_pref);
     useWorkingHoursPref = (CheckBoxPreference) getPreferenceScreen()
         .findPreference(useWorkingHoursKey);
+
     useCalendarSettingsKey = getString(R.string.use_calendar_settings_chkbox_pref);
     useCalendarSettingsPref = (CheckBoxPreference) getPreferenceScreen()
         .findPreference(useCalendarSettingsKey);
-    workingHoursStartPref = (EditTextPreference) getPreferenceScreen()
-        .findPreference(getString(R.string.working_hours_start_text_pref));
-    workingHoursEndPref = (EditTextPreference) getPreferenceScreen()
-        .findPreference(getString(R.string.working_hours_end_text_pref));
+
+    workingHoursStartKey = getString(R.string.working_hours_start_text_pref);
+    workingHoursStartPref = (Preference) getPreferenceScreen().findPreference(
+        workingHoursStartKey);
+    workingHoursStartPref
+        .setOnPreferenceClickListener(new OnPreferenceClickListener() {
+          @Override
+          public boolean onPreferenceClick(Preference preference) {
+            showDialog(WORKING_HOURS_START_ID);
+            return true;
+          }
+        });
+
+    workingHoursEndKey = getString(R.string.working_hours_end_text_pref);
+    workingHoursEndPref = (Preference) getPreferenceScreen().findPreference(
+        workingHoursEndKey);
+    workingHoursEndPref
+        .setOnPreferenceClickListener(new OnPreferenceClickListener() {
+          @Override
+          public boolean onPreferenceClick(Preference preference) {
+            showDialog(WORKING_HOURS_END_ID);
+            return true;
+          }
+        });
 
     enableDisableUseCalendarSettingPreferences();
     enableDisableWorkingHoursPreferences();
@@ -114,10 +153,6 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
       enableDisableUseCalendarSettingPreferences();
     } else if (key.equals(skipWeekendsKey)) {
       setSkipWeekendsSummary();
-    } else if (key.equals(workingHoursStartPref)) {
-      setWorkingHoursStartSummary();
-    } else if (key.equals(workingHoursEndPref)) {
-      setWorkingHoursEndSummary();
     }
   }
 
@@ -127,29 +162,31 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
   @Override
   protected void onResume() {
     super.onResume();
-    // Set up a listener whenever a key changes
+    is24HourFormat = DateFormat.is24HourFormat(getApplicationContext());
+    
+    // Set up a listener to listen to any preference changes
     getPreferenceScreen().getSharedPreferences()
         .registerOnSharedPreferenceChangeListener(this);
-    
+
     if (meetingLengthPref.getEntry() != null
         && meetingLengthPref.getEntry().length() > 0) {
       meetingLengthPref.setSummary(meetingLengthPref.getEntry());
     }
-    
+
     if (timeSpanPref.getEntry() != null && timeSpanPref.getEntry().length() > 0) {
       timeSpanPref.setSummary(timeSpanPref.getEntry());
     } else {
       timeSpanPref.setSummary(getString(R.string.time_span_summary));
     }
-    
+
     setSkipWeekendsSummary();
-    
+
     setUseCalendarSettingsSummary();
-    
+
     setUseWorkingHoursSummary();
-    
+
     setWorkingHoursStartSummary();
-    
+
     setWorkingHoursEndSummary();
   }
 
@@ -160,7 +197,7 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
   protected void onPause() {
     super.onPause();
 
-    // Unregister the listener whenever a key changes
+    // Unregister the preference listener
     getPreferenceScreen().getSharedPreferences()
         .unregisterOnSharedPreferenceChangeListener(this);
   }
@@ -174,11 +211,8 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
       useCalendarSettingsPref.setEnabled(true);
       enableDisableUseCalendarSettingPreferences();
     } else {
-      // useCalendarSettingsPref.setChecked(false);
       useCalendarSettingsPref.setEnabled(false);
-      // workingHoursStartPref.setText("-1");
       workingHoursStartPref.setEnabled(false);
-      // workingHoursEndPref.setText("-1");
       workingHoursEndPref.setEnabled(false);
     }
   }
@@ -196,7 +230,7 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
       workingHoursEndPref.setEnabled(true);
     }
   }
-  
+
   /**
    * Sets the summary for the skipWeekends checkbox preference
    */
@@ -209,7 +243,7 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
           .setSummary(getString(R.string.skip_weekends_summary_unchecked));
     }
   }
-  
+
   /**
    * Sets the summary for the useCalendarSettings checkbox preference
    */
@@ -222,7 +256,7 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
           .setSummary(getString(R.string.use_calendar_settings_summary_unchecked));
     }
   }
-  
+
   /**
    * Sets the summary for the useWorkingHours checkbox preference
    */
@@ -235,32 +269,122 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
           .setSummary(getString(R.string.use_working_hours_summary_unchecked));
     }
   }
-  
+
   /**
    * Sets the summary for the workingHoursStart preference
    */
   private void setWorkingHoursStartSummary() {
-    if (workingHoursStartPref.getText() != null
-        && workingHoursStartPref.getText().length() > 0) {
-      workingHoursStartPref.setSummary(workingHoursStartPref.getText()
-          + " hours");
-    } else {
-      workingHoursStartPref
-          .setSummary(getString(R.string.working_hours_start_summary));
-    }
+    String workingHoursStart = preferences.getString(workingHoursStartKey,
+        getString(R.string.working_hours_start_default_value));
+
+    String[] startTime = workingHoursStart.split("\\.");
+
+    workingHoursStartHours = Integer.parseInt(startTime[0]);
+    workingHoursStartMinutes = Integer.parseInt(startTime[1]);
+
+    setTimeSummary(workingHoursStartPref, workingHoursStartHours,
+        workingHoursStartMinutes);
   }
-  
+
   /**
    * Sets the summary for the workingHoursEnd preference
    */
   private void setWorkingHoursEndSummary() {
-    if (workingHoursEndPref.getText() != null
-        && workingHoursEndPref.getText().length() > 0) {
-      workingHoursEndPref.setSummary(workingHoursEndPref.getText()
-          + " hours");
-    } else {
-      workingHoursEndPref
-          .setSummary(getString(R.string.working_hours_end_summary));
-    }
+    String workingHoursEnd = preferences.getString(workingHoursEndKey,
+        getString(R.string.working_hours_end_default_value));
+
+    String[] endTime = workingHoursEnd.split("\\.");
+
+    workingHoursEndHours = Integer.parseInt(endTime[0]);
+    workingHoursEndMinutes = Integer.parseInt(endTime[1]);
+
+    setTimeSummary(workingHoursEndPref, workingHoursEndHours,
+        workingHoursEndMinutes);
   }
+
+  /**
+   * Get the listener to workingHoursStart TimePickerDialog changes
+   */
+  private TimePickerDialog.OnTimeSetListener workingHoursStartTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+      setTimeSummary(workingHoursStartPref, hourOfDay, minute);
+      workingHoursStartHours = hourOfDay;
+      workingHoursStartMinutes = minute;
+    }
+  };
+
+  /**
+   * Get the listener to workingHoursEnd TimePickerDialog changes
+   */
+  private TimePickerDialog.OnTimeSetListener workingHoursEndTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+      setTimeSummary(workingHoursEndPref, hourOfDay, minute);
+      workingHoursEndHours = hourOfDay;
+      workingHoursEndMinutes = minute;
+    }
+  };
+
+  /**
+   * Sets the summary display for the working hours start and end times
+   * 
+   * @param preference
+   * @param hourOfDay
+   * @param minute
+   */
+  private void setTimeSummary(Preference preference, int hourOfDay, int minute) {
+    StringBuilder time = new StringBuilder();
+    if (is24HourFormat) {
+      time.append(hourOfDay);
+      time.append(":");
+      time.append(new Integer(minute).toString().length() == 2 ? minute : "0"
+          + minute);
+    } else {
+      time.append(hourOfDay <= 12 ? hourOfDay : (hourOfDay - 12));
+      time.append(":");
+      time.append(new Integer(minute).toString().length() == 2 ? minute : "0"
+          + minute);
+      time.append(hourOfDay < 12 ? " AM" : " PM");
+    }
+    preference.setSummary(time.toString());
+  }
+
+  /**
+   * Called when showDialog is called to create and show TimePickerDialogs
+   */
+  @Override
+  protected Dialog onCreateDialog(int id) {
+    switch (id) {
+    case WORKING_HOURS_START_ID:
+      return new TimePickerDialog(this, workingHoursStartTimeSetListener,
+          workingHoursStartHours, workingHoursStartMinutes, is24HourFormat);
+
+    case WORKING_HOURS_END_ID:
+      return new TimePickerDialog(this, workingHoursEndTimeSetListener,
+          workingHoursEndHours, workingHoursEndMinutes, is24HourFormat);
+    }
+    return null;
+  }
+
+  /**
+   * Called when this activity is no longer visible to persist preferences
+   */
+  @Override
+  protected void onStop() {
+    super.onStop();
+    Log.i(MeetingSchedulerConstants.TAG, "Saving preferences...");
+    SharedPreferences.Editor editor = preferences.edit();
+    editor.putString(meetingLengthKey, meetingLengthPref.getValue());
+    editor.putString(timeSpanKey, timeSpanPref.getValue());
+    editor.putBoolean(skipWeekendsKey, skipWeekendsPref.isChecked());
+    editor.putBoolean(useWorkingHoursKey, useWorkingHoursPref.isChecked());
+    editor.putBoolean(useCalendarSettingsKey, useCalendarSettingsPref
+        .isChecked());
+    editor.putString(workingHoursStartKey, workingHoursStartHours + "."
+        + workingHoursStartMinutes);
+    editor.putString(workingHoursEndKey, workingHoursEndHours + "."
+        + workingHoursEndMinutes);
+    editor.commit();
+    Log.i(MeetingSchedulerConstants.TAG, "Successfully saved preferences");
+  }
+
 }

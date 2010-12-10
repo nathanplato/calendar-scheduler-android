@@ -20,12 +20,12 @@
 	<CheckBoxPreference android:key="@string/use_calendar_settings_chkbox_pref"
 		android:summary="@string/use_calendar_settings_summary_unchecked" android:title="@string/use_calendar_settings"
 		android:defaultValue="@string/use_calendar_settings_default_value"></CheckBoxPreference>
-	<EditTextPreference android:summary="@string/working_hours_start_summary"
-		android:title="@string/working_hours_start" android:key="@string/working_hours_start_text_pref"
-		android:defaultValue="@string/working_hours_start_default_value"></EditTextPreference>
-	<EditTextPreference android:title="@string/working_hours_end"
+	<Preference android:summary="@string/working_hours_start_summary"
+	android:title="@string/working_hours_start" android:key="@string/working_hours_start_text_pref"
+	android:defaultValue="@string/working_hours_start_default_value" android:persistent="true"></Preference>
+	<Preference android:title="@string/working_hours_end"
 		android:summary="@string/working_hours_end_summary" android:key="@string/working_hours_end_text_pref"
-		android:defaultValue="@string/working_hours_end_default_value"></EditTextPreference>
+		android:defaultValue="@string/working_hours_end_default_value" android:persistent="true"></Preference>
 </PreferenceCategory>
 
 </PreferenceScreen>

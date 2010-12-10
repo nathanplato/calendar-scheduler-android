@@ -47,6 +47,6 @@
 	<string name="skip_weekends_default_value">true</string>
 	<string name="use_working_hours_default_value">true</string>
 	<string name="use_calendar_settings_default_value">false</string>
-	<string name="working_hours_start_default_value">9</string>
-	<string name="working_hours_end_default_value">17.5</string>
+	<string name="working_hours_start_default_value">9.0</string>
+	<string name="working_hours_end_default_value">17.30</string>
 </resources>
