@@ -82,16 +82,18 @@ public class SelectMeetingTimeActivity extends Activity {
 
     // Custom title bar
     if (customTitleSupported) {
-      getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.app_title_select_time);
+      getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE,
+          R.layout.app_title_select_time);
     }
 
     // Getting the selectedAttendees list from the intent
     final Intent intent = getIntent();
-    selectedAttendees = (List<Attendee>) intent.getSerializableExtra(SELECTED_ATTENDEES);
+    selectedAttendees = (List<Attendee>) intent
+        .getSerializableExtra(SELECTED_ATTENDEES);
 
     // Create a new Authentication Manager to authenticate in the Calendar API.
-    auth = new AuthManager(this, MeetingSchedulerConstants.GET_LOGIN, null, true,
-        CalendarApiInfo.AUTH_TOKEN_TYPE);
+    auth = new AuthManager(this, MeetingSchedulerConstants.GET_LOGIN, null,
+        true, CalendarApiInfo.AUTH_TOKEN_TYPE);
 
     availableMeetingTimes = new ArrayList<AvailableMeetingTime>();
 
@@ -106,23 +108,27 @@ public class SelectMeetingTimeActivity extends Activity {
   /**
    * Returns an Intent that will display this Activity.
    * 
-   * @param context The application Context
-   * @param selectedAttendees The list of selected Attendees. Should be of a
-   *          Serializable List type
+   * @param context
+   *          The application Context
+   * @param selectedAttendees
+   *          The list of selected Attendees. Should be of a Serializable List
+   *          type
    * @return An intent that will display this Activity
-   * @throws NotSerializableException If the {@code selectedAttendees} is not
-   *           serializable
+   * @throws NotSerializableException
+   *           If the {@code selectedAttendees} is not serializable
    */
-  public static Intent createViewIntent(Context context, List<Attendee> selectedAttendees)
-      throws NotSerializableException {
+  public static Intent createViewIntent(Context context,
+      List<Attendee> selectedAttendees) throws NotSerializableException {
     Intent intent = new Intent(context, SelectMeetingTimeActivity.class);
     if (!(selectedAttendees instanceof Serializable)) {
-      Log.e(MeetingSchedulerConstants.TAG, "List<Attendee> selectedAttendees is not serializable");
+      Log.e(MeetingSchedulerConstants.TAG,
+          "List<Attendee> selectedAttendees is not serializable");
       throw new NotSerializableException();
     }
     intent.putExtra(SELECTED_ATTENDEES, (Serializable) selectedAttendees);
-    Log.e(MeetingSchedulerConstants.TAG,
-        "Successfully serialized List<Attendee> selectedAttendees in the intent");
+    Log
+        .e(MeetingSchedulerConstants.TAG,
+            "Successfully serialized List<Attendee> selectedAttendees in the intent");
     intent.setClass(context, SelectMeetingTimeActivity.class);
     return intent;
   }
@@ -131,23 +137,19 @@ public class SelectMeetingTimeActivity extends Activity {
    * Called when the authentication has finished.
    */
   @Override
-  public void onActivityResult(int requestCode, int resultCode, final Intent results) {
+  public void onActivityResult(int requestCode, int resultCode,
+      final Intent results) {
     super.onActivityResult(requestCode, resultCode, results);
     switch (requestCode) {
     case MeetingSchedulerConstants.GET_LOGIN: {
       if (resultCode == RESULT_OK && auth != null) {
         auth.authResult(resultCode, results);
-      } else if (resultCode == RESULT_CANCELED) {
-        finish();
       }
       break;
     }
     case MeetingSchedulerConstants.AUTHENTICATED: {
-      if (resultCode == RESULT_OK && auth != null) {
+      if (resultCode == RESULT_OK && auth != null)
         authenticated();
-      } else if (resultCode == RESULT_CANCELED) {
-        finish();
-      }
       break;
     }
     }
@@ -160,8 +162,8 @@ public class SelectMeetingTimeActivity extends Activity {
       @Override
       public void onClick(View v) {
         if (auth.getAuthToken() != null) {
-          startDate.add(Calendar.DAY_OF_YEAR, Settings.getInstance(getApplicationContext())
-              .getTimeSpan());
+          startDate.add(Calendar.DAY_OF_YEAR, Settings.getInstance(
+              getApplicationContext()).getTimeSpan());
           findMeetings();
         }
       }
@@ -174,7 +176,8 @@ public class SelectMeetingTimeActivity extends Activity {
   private void authenticate() {
     auth.doLogin(new Runnable() {
       public void run() {
-        onActivityResult(MeetingSchedulerConstants.AUTHENTICATED, RESULT_OK, null);
+        onActivityResult(MeetingSchedulerConstants.AUTHENTICATED, RESULT_OK,
+            null);
       }
     }, false);
 
@@ -188,8 +191,8 @@ public class SelectMeetingTimeActivity extends Activity {
     if (auth.getAuthToken() == null) {
       authenticate();
     } else {
-      eventTimeRetriever = new CommonFreeTimesRetriever(new FreeBusyTimesRetriever(
-          auth.getAuthToken()));
+      eventTimeRetriever = new CommonFreeTimesRetriever(
+          new FreeBusyTimesRetriever(auth.getAuthToken()));
 
       findMeetings();
     }
@@ -205,8 +208,9 @@ public class SelectMeetingTimeActivity extends Activity {
         // Calculating the available meeting times from the selectedAttendees
         // and
         // the settings
-        final List<AvailableMeetingTime> newTimes = eventTimeRetriever.getAvailableMeetingTime(
-            selectedAttendees, startDate.getTime(), getApplicationContext());
+        final List<AvailableMeetingTime> newTimes = eventTimeRetriever
+            .getAvailableMeetingTime(selectedAttendees, startDate.getTime(),
+                getApplicationContext());
 
         // Update the progress bar
         handler.post(new Runnable() {
@@ -226,14 +230,15 @@ public class SelectMeetingTimeActivity extends Activity {
   /**
    * Displays the available meeting times on the screen.
    * 
-   * @param availableMeetingTimes The meeting times to display.
+   * @param availableMeetingTimes
+   *          The meeting times to display.
    */
   private void populateMeetings(List<AvailableMeetingTime> newTimes) {
     availableMeetingTimes.addAll(newTimes);
     // Adding the available meeting times to the UI
     ExpandableListView meetingListContainer = (ExpandableListView) findViewById(R.id.meeting_list);
-    meetingListContainer.setAdapter(new EventExpandableListAdapter(this, availableMeetingTimes,
-        Settings.getInstance(getApplicationContext()).getMeetingLength()));
+    meetingListContainer.setAdapter(new EventExpandableListAdapter(this,
+        availableMeetingTimes, Settings.getInstance(this).getMeetingLength()));
   }
 
 }

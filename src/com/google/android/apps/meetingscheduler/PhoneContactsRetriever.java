@@ -96,7 +96,7 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
         Email.IS_PRIMARY + " DESC");
     String result = null;
 
-    if (cursor.getCount() > 0) {
+    if (cursor!= null && cursor.getCount() > 0) {
       while (cursor.moveToNext()) {
         String email = cursor.getString(cursor.getColumnIndex(Email.DATA));
 

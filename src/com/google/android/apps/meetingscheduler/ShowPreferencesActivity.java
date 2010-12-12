@@ -84,8 +84,7 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
     super.onCreate(savedInstanceState);
     addPreferencesFromResource(R.xml.preferences);
 
-    preferences = PreferenceManager
-        .getDefaultSharedPreferences(getApplicationContext());
+    preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
     meetingLengthKey = getString(R.string.meeting_length_list_pref);
     meetingLengthPref = (ListPreference) getPreferenceScreen().findPreference(
@@ -162,8 +161,8 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
   @Override
   protected void onResume() {
     super.onResume();
-    is24HourFormat = DateFormat.is24HourFormat(getApplicationContext());
-    
+    is24HourFormat = DateFormat.is24HourFormat(this);
+
     // Set up a listener to listen to any preference changes
     getPreferenceScreen().getSharedPreferences()
         .registerOnSharedPreferenceChangeListener(this);
@@ -334,14 +333,17 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
   private void setTimeSummary(Preference preference, int hourOfDay, int minute) {
     StringBuilder time = new StringBuilder();
     if (is24HourFormat) {
-      time.append(hourOfDay);
+      time.append(Integer.toString(hourOfDay).length() == 2 ? hourOfDay
+          : "0" + hourOfDay);
       time.append(":");
-      time.append(new Integer(minute).toString().length() == 2 ? minute : "0"
+      time.append(Integer.toString(minute).length() == 2 ? minute : "0"
           + minute);
     } else {
-      time.append(hourOfDay <= 12 ? hourOfDay : (hourOfDay - 12));
+      int hour = hourOfDay <= 12 ? hourOfDay : hourOfDay - 12;
+      time.append(Integer.toString(hour).length() == 2 ? hour : "0"
+          + hour);
       time.append(":");
-      time.append(new Integer(minute).toString().length() == 2 ? minute : "0"
+      time.append(Integer.toString(minute).length() == 2 ? minute : "0"
           + minute);
       time.append(hourOfDay < 12 ? " AM" : " PM");
     }
@@ -349,7 +351,7 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
   }
 
   /**
-   * Called when showDialog is called to create and show TimePickerDialogs
+   * Called once when showDialog is called to create and show TimePickerDialogs
    */
   @Override
   protected Dialog onCreateDialog(int id) {
@@ -363,6 +365,23 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
           workingHoursEndHours, workingHoursEndMinutes, is24HourFormat);
     }
     return null;
+  }
+
+  /**
+   * Called every time showDialog is called
+   */
+  @Override
+  protected void onPrepareDialog(int id, Dialog dialog) {
+    super.onPrepareDialog(id, dialog);
+    switch (id) {
+    case WORKING_HOURS_START_ID:
+      ((TimePickerDialog) dialog).updateTime(workingHoursStartHours,
+          workingHoursStartMinutes);
+      break;
+    case WORKING_HOURS_END_ID:
+      ((TimePickerDialog) dialog).updateTime(workingHoursEndHours,
+          workingHoursEndMinutes);
+    }
   }
 
   /**
@@ -386,5 +405,4 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
     editor.commit();
     Log.i(MeetingSchedulerConstants.TAG, "Successfully saved preferences");
   }
-
 }

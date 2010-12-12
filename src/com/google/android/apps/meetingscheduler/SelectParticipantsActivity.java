@@ -266,7 +266,7 @@ public class SelectParticipantsActivity extends Activity {
    * Sets the help text beside the Find Meetings button
    */
   private void setFindMeetingButtonText() {
-    Settings settings = Settings.getInstance(getApplicationContext());
+    Settings settings = Settings.getInstance(this);
     StringBuilder string = new StringBuilder();
 
     int meetingLength = settings.getMeetingLength();
