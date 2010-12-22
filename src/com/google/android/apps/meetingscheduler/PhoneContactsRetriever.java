@@ -53,7 +53,7 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
     List<Attendee> result = new ArrayList<Attendee>();
     ContentResolver cr = activity.getContentResolver();
     Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, new String[] { Contacts._ID,
-        Contacts.DISPLAY_NAME }, null, null, null);
+        Contacts.DISPLAY_NAME, Contacts.IN_VISIBLE_GROUP }, Contacts.IN_VISIBLE_GROUP + " = 1", null, null);
 
     if (cursor.getCount() > 0) {
       while (cursor.moveToNext()) {
@@ -100,6 +100,8 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
       while (cursor.moveToNext()) {
         String email = cursor.getString(cursor.getColumnIndex(Email.DATA));
 
+        if (!email.contains("@"))
+          continue;
         // Get the first same-domain account.
         if (isSameDomain(account.name, email))
           return email;
