@@ -16,12 +16,12 @@
 
 package com.google.android.apps.meetingscheduler;
 
+import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
+import android.text.format.DateFormat;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,7 +31,7 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
+import java.io.NotSerializableException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -40,7 +40,6 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 /**
  * Adapts the Meeting data to the ExpendableListView.
@@ -50,7 +49,7 @@ import java.util.TimeZone;
 public class EventExpandableListAdapter extends BaseExpandableListAdapter {
 
   /** The Application Context */
-  private Context context;
+  private Activity activity;
 
   /** The lit of AvailableMeetingTime mapped by Days */
   private Map<Date, List<AvailableMeetingTime>> sortedEventsByDays;
@@ -67,18 +66,18 @@ public class EventExpandableListAdapter extends BaseExpandableListAdapter {
   /**
    * Constructs a new EventExpandableListAdapter given the List of Dates
    * 
-   * @param context The context of the application
+   * @param activity The activity of the application
    * @param availableMeetingTimes All the times for which a meeting is possible
    *          for the attendees
    */
-  public EventExpandableListAdapter(Context context,
+  public EventExpandableListAdapter(Activity activity,
       List<AvailableMeetingTime> availableMeetingTimes, int meetingLength) {
-    this.context = context;
+    this.activity = activity;
 
     sortedEventsByDays = sortEventsByDay(availableMeetingTimes);
     sortedDays = asSortedList(sortedEventsByDays.keySet());
 
-    inflater = LayoutInflater.from(context);
+    inflater = LayoutInflater.from(activity);
 
     this.meetingLength = meetingLength;
   }
@@ -107,7 +106,8 @@ public class EventExpandableListAdapter extends BaseExpandableListAdapter {
     Map<Date, List<AvailableMeetingTime>> sortedEventsByDays = new HashMap<Date, List<AvailableMeetingTime>>();
 
     for (AvailableMeetingTime availableMeetingTime : availableMeetingTimes) {
-      GregorianCalendar calendar = new GregorianCalendar();
+      GregorianCalendar calendar = new GregorianCalendar(CalendarServiceManager.getInstance()
+          .getTimeZone());
       calendar.setTime(availableMeetingTime.start);
       calendar.set(Calendar.HOUR_OF_DAY, 0);
       calendar.clear(Calendar.HOUR);
@@ -159,7 +159,7 @@ public class EventExpandableListAdapter extends BaseExpandableListAdapter {
         final List<Pair<Date, Date>> calendars = getPossibleStartingTime(startDate, endDate);
 
         if (calendars.size() > 1) {
-          final AlertDialog.Builder builder = new AlertDialog.Builder(context);
+          final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
           builder.setTitle(R.string.choose_meeting_time);
           builder.setCancelable(true);
           builder.setNegativeButton(R.string.cancel, null);
@@ -173,13 +173,14 @@ public class EventExpandableListAdapter extends BaseExpandableListAdapter {
           builder.show();
         } else
           createEvent(startDate, endDate, attendees);
-
       }
 
       private List<Pair<Date, Date>> getPossibleStartingTime(Date startDate, Date endDate) {
         List<Pair<Date, Date>> result = new ArrayList<Pair<Date, Date>>();
-        Calendar currentStart = new GregorianCalendar();
-        Calendar currentEnd = new GregorianCalendar();
+        Calendar currentStart = new GregorianCalendar(CalendarServiceManager.getInstance()
+            .getTimeZone());
+        Calendar currentEnd = new GregorianCalendar(CalendarServiceManager.getInstance()
+            .getTimeZone());
 
         currentStart.setTime(startDate);
         currentEnd.setTime(startDate);
@@ -222,7 +223,7 @@ public class EventExpandableListAdapter extends BaseExpandableListAdapter {
   public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
     View view = inflater.inflate(R.layout.meeting_time_result_group_title, null);
     TextView title = (TextView) view.findViewById(R.id.meeting_time_group_title);
-    String date = DateUtils.formatDateTime(context, getGroup(groupPosition).getTime(),
+    String date = DateUtils.formatDateTime(activity, getGroup(groupPosition).getTime(),
         DateUtils.FORMAT_SHOW_DATE + DateUtils.FORMAT_SHOW_WEEKDAY + DateUtils.FORMAT_SHOW_YEAR);
     title.setText(date + " (" + getChildrenCount(groupPosition) + ")");
     return view;
@@ -237,10 +238,12 @@ public class EventExpandableListAdapter extends BaseExpandableListAdapter {
   }
 
   private String getMeetingDisplayString(Date startDate, Date endDate) {
-    String dateStart = DateUtils.formatDateTime(context, startDate.getTime(),
-        DateUtils.FORMAT_SHOW_TIME);
-    String dateEnd = DateUtils.formatDateTime(context, endDate.getTime(),
-        DateUtils.FORMAT_SHOW_TIME);
+    java.text.DateFormat format = DateFormat.getTimeFormat(activity);
+
+    format.setTimeZone(CalendarServiceManager.getInstance().getTimeZone());
+
+    String dateStart = format.format(startDate);
+    String dateEnd = format.format(endDate);
 
     return dateStart + " - " + dateEnd;
   }
@@ -256,19 +259,31 @@ public class EventExpandableListAdapter extends BaseExpandableListAdapter {
     // TODO: fire an intent of the Google Calendar App to create an event.
     // If the Calendar App is not installed fire the intent below
     // which redirects to the Web UI to create an event.
-    String attendeesEmails = attendees.get(0).email;
-    for (int i = 1; i < attendees.size(); i++) {
-      attendeesEmails += "," + attendees.get(i).email;
+    try {
+      activity.startActivityForResult(SetEventDetailsActivity.createViewIntent(activity, attendees,
+          startDate.getTime(), endDate.getTime()), MeetingSchedulerConstants.CREATE_EVENT);
+    } catch (NotSerializableException e) {
+      Log.e(MeetingSchedulerConstants.TAG,
+          "Intent is not run because of a NotSerializableException. "
+              + "Probably the selectedAttendees list which is not serializable.");
     }
 
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
-    sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-    String createEventUrl = "https://www.google.com/calendar/render?" + "action=TEMPLATE"
-        + "&dates=" + sdf.format(startDate) + "/" + sdf.format(endDate) + "&add=" + attendeesEmails
-        + "&crm=BUSY" + "&gsessionid=OK" + "&sf=true" + "&output=xml";
-    Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse(createEventUrl));
-
-    context.startActivity(browse);
+    // String attendeesEmails = attendees.get(0).email;
+    // for (int i = 1; i < attendees.size(); i++) {
+    // attendeesEmails += "," + attendees.get(i).email;
+    // }
+    //
+    // SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
+    // sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+    // String createEventUrl = "https://www.google.com/calendar/render?" +
+    // "action=TEMPLATE"
+    // + "&dates=" + sdf.format(startDate) + "/" + sdf.format(endDate) + "&add="
+    // + attendeesEmails
+    // + "&crm=BUSY" + "&gsessionid=OK" + "&sf=true" + "&output=xml";
+    // Intent browse = new Intent(Intent.ACTION_VIEW,
+    // Uri.parse(createEventUrl));
+    //
+    // context.startActivity(browse);
   }
 
 }

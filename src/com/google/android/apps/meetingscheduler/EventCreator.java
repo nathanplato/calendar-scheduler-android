@@ -16,29 +16,18 @@
 
 package com.google.android.apps.meetingscheduler;
 
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
+
 /**
- * Constants used by the Meeting Scheduler application.
+ * Allows creation of events.
  * 
+ * @since 2.2
  * @author Alain Vongsouvanh (alainv@google.com)
  */
-public class MeetingSchedulerConstants {
-  /**
-   * Should be used by all log statements
-   */
-  public static final String TAG = "Meeting Scheduler";
+public interface EventCreator {
 
-  public static final String VERSION = "1.0";
-
-  /*
-   * onActivityResult request codes:
-   */
-  public static final int GET_LOGIN = 0;
-  public static final int AUTHENTICATED = 1;
-  public static final int CREATE_EVENT = 2;
-
-  /**
-   * The type of account that we can use for gdata operations.
-   */
-  public static final String ACCOUNT_TYPE = "com.google";
-
+  public void createEvent(String title, String where, String description, boolean sendEventNotifications, Date start, Date end, List<Attendee> attendees)
+      throws UnknownError, IOException;
 }

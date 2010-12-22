@@ -49,4 +49,12 @@
 	<string name="use_calendar_settings_default_value">false</string>
 	<string name="working_hours_start_default_value">9.0</string>
 	<string name="working_hours_end_default_value">17.30</string>
+<string name="set_event_details_caption">Event details...</string>
+<string name="event_title_hint">Title</string>
+<string name="event_description_hint">Description</string>
+<string name="event_where_hint">Where</string>
+<string name="save_event_button">Save</string>
+<string name="send_event_notifications_label">Send event notifications</string>
+<string name="event_creation_success">Meeting created</string>
+<string name="event_creation_failure">Failed to create meeting</string>
 </resources>

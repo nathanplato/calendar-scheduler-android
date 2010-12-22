@@ -49,27 +49,17 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
   private static final String BASE_FREEBUSY_ID = "http://www.google.com/calendar/feeds/default/freebusy/";
 
   /**
-   * The ClientLogin authentication to use when querying the Google Calendar
-   * API.
-   */
-  private String authToken;
-
-  /**
    * Constructor.
-   * 
-   * @param authToken The ClientLogin authentication to use when querying the
-   *          Google Calendar API.
    */
-  public FreeBusyTimesRetriever(String authToken) {
-    this.authToken = authToken;
+  public FreeBusyTimesRetriever() {
   }
 
   @Override
-  public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees,
-      Date startDate, Context context) {
+  public Map<Attendee, List<Busy>> getBusyTimes(List<Attendee> attendees, Date startDate,
+      Context context) {
     Map<Attendee, List<Busy>> result = new HashMap<Attendee, List<Busy>>();
     Map<String, Attendee> batchIds = new HashMap<String, Attendee>();
-    CalendarService service = getService();
+    CalendarService service = CalendarServiceManager.getInstance().getService();
     FreeBusyList batchRequest = createBatchRequest(attendees, batchIds);
     CalendarUrl url = createBatchUrl(startDate, Settings.getInstance(context).getTimeSpan());
 
@@ -117,20 +107,6 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
       } else
         ++i;
     }
-  }
-
-  /**
-   * Initialize a new CalendarService.
-   * 
-   * @return An initialized CalendarService.
-   */
-  private CalendarService getService() {
-    CalendarService result = new CalendarService(MeetingSchedulerConstants.TAG + " "
-        + MeetingSchedulerConstants.VERSION);
-
-    result.setClientLoginAuthenticationToken(authToken);
-
-    return result;
   }
 
   /**
@@ -203,7 +179,7 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
    *         {@code daysToAdd}.
    */
   private DateTime getDateTime(Date startDate, int daysToAdd) {
-    Calendar calendar = new GregorianCalendar();
+    Calendar calendar = new GregorianCalendar(CalendarServiceManager.getInstance().getTimeZone());
 
     calendar.setTime(startDate);
     // Clear time component.
@@ -226,8 +202,8 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
    * @return True if {@code lhs} and {@code rhs} are on the same day.
    */
   private boolean isSameDay(Date lhs, Date rhs) {
-    Calendar clhs = new GregorianCalendar();
-    Calendar crhs = new GregorianCalendar();
+    Calendar clhs = new GregorianCalendar(CalendarServiceManager.getInstance().getTimeZone());
+    Calendar crhs = new GregorianCalendar(CalendarServiceManager.getInstance().getTimeZone());
 
     clhs.setTime(lhs);
     crhs.setTime(rhs);
@@ -244,7 +220,7 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
    */
   private List<Busy> splitBusyTimes(Date startDate, Date endDate) {
     List<Busy> result = new ArrayList<Busy>();
-    Calendar currentDay = new GregorianCalendar();
+    Calendar currentDay = new GregorianCalendar(CalendarServiceManager.getInstance().getTimeZone());
 
     currentDay.setTime(startDate);
     setTime(currentDay, 23, 59, 59, 999);
