@@ -18,6 +18,7 @@ package com.google.android.apps.meetingscheduler;
 
 import android.accounts.Account;
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -26,16 +27,16 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Filter.FilterListener;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.Filter.FilterListener;
 
 import java.io.NotSerializableException;
 import java.util.ArrayList;
@@ -61,6 +62,14 @@ public class SelectParticipantsActivity extends Activity {
 
   private EditText editText;
 
+  /**
+   * Cancel Activity re-launch when screen orientation changes.
+   */
+  @Override
+  public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+  }
+
   /** Called when the activity is first created. */
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -72,29 +81,30 @@ public class SelectParticipantsActivity extends Activity {
 
     // Custom title bar
     if (customTitleSupported) {
-      getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE,
-          R.layout.app_title_select_participants);
+      getWindow()
+          .setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.app_title_select_participants);
     }
 
     // Adding action to the button
     addFindMeetingButtonListener();
 
-    AccountChooser.getInstance().chooseAccount(this,
-        new AccountChooser.AccountHandler() {
-          @Override
-          public void handleAccountSelected(Account account) {
-            if (account != null) {
-              // Set the attendee retriever with the selected account.
-              attendeeRetriever = new PhoneContactsRetriever(
-                  SelectParticipantsActivity.this, account);
+    if (savedInstanceState == null) {
+      AccountChooser.getInstance().chooseAccount(this, new AccountChooser.AccountHandler() {
+        @Override
+        public void handleAccountSelected(Account account) {
+          if (account != null) {
+            // Set the attendee retriever with the selected account.
+            attendeeRetriever = new PhoneContactsRetriever(SelectParticipantsActivity.this, account);
 
-              // Adding selectable attendees
-              retrieveAttendee();
-            } else {
-              SelectParticipantsActivity.this.finish();
-            }
+            // Adding selectable attendees
+            retrieveAttendee();
+          } else {
+            SelectParticipantsActivity.this.finish();
           }
-        });
+        }
+      });
+    } else
+      System.err.println("ON CREATE RECALLED !!!!!!!!!! " + attendees.size());
   }
 
   /**
@@ -106,25 +116,21 @@ public class SelectParticipantsActivity extends Activity {
       public void onClick(View v) {
         List<Attendee> selectedAttendees = getSelectedAttendees();
         if (selectedAttendees.size() > 0) {
-          Log
-              .i(MeetingSchedulerConstants.TAG,
-                  "Find meeting button pressed - about to launch SelectMeeting activity");
+          Log.i(MeetingSchedulerConstants.TAG,
+              "Find meeting button pressed - about to launch SelectMeeting activity");
 
           // the results are called on widgetActivityCallback
           try {
-            startActivity(SelectMeetingTimeActivity.createViewIntent(
-                getApplicationContext(), selectedAttendees));
+            startActivity(SelectMeetingTimeActivity.createViewIntent(getApplicationContext(),
+                selectedAttendees));
 
           } catch (NotSerializableException e) {
-            Log
-                .e(
-                    MeetingSchedulerConstants.TAG,
-                    "Intent is not run because of a NotSerializableException. "
-                        + "Probably the selectedAttendees list which is not serializable.");
+            Log.e(MeetingSchedulerConstants.TAG,
+                "Intent is not run because of a NotSerializableException. "
+                    + "Probably the selectedAttendees list which is not serializable.");
           }
-          Log
-              .i(MeetingSchedulerConstants.TAG,
-                  "Find meeting button pressed - successfully launched SelectMeeting activity");
+          Log.i(MeetingSchedulerConstants.TAG,
+              "Find meeting button pressed - successfully launched SelectMeeting activity");
         } else {
           Toast toast = Toast.makeText(getApplicationContext(),
               "You must select at least 1 participant", 1000);
@@ -152,11 +158,9 @@ public class SelectParticipantsActivity extends Activity {
     // Adding click event to attendees Widgets
     attendeeListView.setOnItemClickListener(new OnItemClickListener() {
       @Override
-      public void onItemClick(AdapterView<?> parent, View view, int position,
-          long id) {
+      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         // We use position -1 to ignore the header.
-        Attendee attendee = (Attendee) attendeeListView
-            .getItemAtPosition(position);
+        Attendee attendee = (Attendee) attendeeListView.getItemAtPosition(position);
         attendee.selected = !attendee.selected;
         attendeeAdapter.sort();
       }
@@ -177,8 +181,7 @@ public class SelectParticipantsActivity extends Activity {
    * Add on text changed listener to filter the attendee list view.
    */
   private EditText getEditTextFilter() {
-    editText = (EditText) getLayoutInflater().inflate(
-        R.layout.participants_text_filter, null);
+    editText = (EditText) getLayoutInflater().inflate(R.layout.participants_text_filter, null);
 
     editText.addTextChangedListener(new TextWatcher() {
       @Override
@@ -198,8 +201,7 @@ public class SelectParticipantsActivity extends Activity {
       }
 
       @Override
-      public void beforeTextChanged(CharSequence s, int start, int count,
-          int after) {
+      public void beforeTextChanged(CharSequence s, int start, int count, int after) {
       }
 
       @Override
@@ -256,10 +258,8 @@ public class SelectParticipantsActivity extends Activity {
    * Starts the ShowPreferencesActivity
    */
   private void showPreferences() {
-    startActivity(ShowPreferencesActivity
-        .createViewIntent(getApplicationContext()));
-    Log.i(MeetingSchedulerConstants.TAG,
-        "Successfully launched ShowPreferencesActivity");
+    startActivity(ShowPreferencesActivity.createViewIntent(getApplicationContext()));
+    Log.i(MeetingSchedulerConstants.TAG, "Successfully launched ShowPreferencesActivity");
   }
 
   /**
@@ -295,7 +295,7 @@ public class SelectParticipantsActivity extends Activity {
       useWorkingHoursText = "regardless of working hours";
     }
     string.append(useWorkingHoursText);
-    
+
     TextView settingsText = (TextView) findViewById(R.id.find_time_button_text);
     settingsText.setText(string.toString());
   }

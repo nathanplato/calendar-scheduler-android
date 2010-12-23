@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -62,6 +63,14 @@ public class SetEventDetailsActivity extends Activity {
   private Handler handler = new Handler();
 
   List<Attendee> selectedAttendees;
+
+  /**
+   * Cancel Activity re-launch when screen orientation changes.
+   */
+  @Override
+  public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+  }
 
   /** Called when the activity is first created. */
   @Override
@@ -109,7 +118,7 @@ public class SetEventDetailsActivity extends Activity {
               Intent data = new Intent();
 
               data.putExtra(MESSAGE, e.getMessage());
-              setResult(RESULT_CANCELED, data);
+              setResult(RESULT_FIRST_USER, data);
             }
 
             // Update the progress bar

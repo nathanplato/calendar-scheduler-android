@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -70,6 +71,14 @@ public class SelectMeetingTimeActivity extends Activity {
 
   /** The date from which to start to look for available meeting times */
   private Calendar startDate;
+
+  /**
+   * Cancel Activity re-launch when screen orientation changes.
+   */
+  @Override
+  public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+  }
 
   /** Called when the activity is first created. */
   @SuppressWarnings("unchecked")
@@ -135,22 +144,20 @@ public class SelectMeetingTimeActivity extends Activity {
   public void onActivityResult(int requestCode, int resultCode, final Intent results) {
     super.onActivityResult(requestCode, resultCode, results);
     switch (requestCode) {
-    case MeetingSchedulerConstants.GET_LOGIN: {
+    case MeetingSchedulerConstants.GET_LOGIN:
       if (resultCode == RESULT_OK && auth != null) {
         auth.authResult(resultCode, results);
       }
       break;
-    }
-    case MeetingSchedulerConstants.AUTHENTICATED: {
+    case MeetingSchedulerConstants.AUTHENTICATED:
       if (resultCode == RESULT_OK && auth != null)
         authenticated();
       break;
-    }
-    case MeetingSchedulerConstants.CREATE_EVENT: {
+    case MeetingSchedulerConstants.CREATE_EVENT:
       System.err.println("ON ACTIVITY RESULT: " + resultCode);
       if (resultCode == RESULT_OK) {
         Toast.makeText(this, getString(R.string.event_creation_success), Toast.LENGTH_SHORT).show();
-      } else {
+      } else if (resultCode == RESULT_FIRST_USER && results != null) {
         Toast.makeText(
             this,
             getString(R.string.event_creation_failure) + ": "
@@ -158,7 +165,6 @@ public class SelectMeetingTimeActivity extends Activity {
             .show();
       }
       break;
-    }
     }
   }
 
