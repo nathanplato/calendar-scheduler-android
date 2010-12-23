@@ -16,6 +16,7 @@
 
 package com.google.android.apps.meetingscheduler;
 
+import android.accounts.Account;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -65,6 +66,11 @@ public class Settings {
   private static String workingHoursEnd;
 
   /**
+   * User selected account.
+   */
+  private static Account account;
+
+  /**
    * Can't get Settings directly, use getInstance instead
    */
   private Settings() {
@@ -76,9 +82,18 @@ public class Settings {
    * @return An instance of Settings
    */
   public static Settings getInstance(Context context) {
+    return getInstance(context, null);
+  }
+
+  /**
+   * Get an instance of the Settings bean
+   * 
+   * @return An instance of Settings
+   */
+  public static Settings getInstance(Context context, Runnable handleSettings) {
     if (settings == null)
       settings = new Settings();
-    getSettings(context);
+    getSettings(context, handleSettings);
     return settings;
   }
 
@@ -110,50 +125,57 @@ public class Settings {
     return workingHoursEnd;
   }
 
+  public Account getAccount() {
+    return account;
+  }
+
   /**
    * Gets the settings from the Preferences screen
    * 
-   * @param context
-   *          The application context
+   * @param context The application context
    */
-  private static void getSettings(Context context) {
-    SharedPreferences prefs = PreferenceManager
-        .getDefaultSharedPreferences(context);
+  private static void getSettings(Context context, final Runnable handleSettings) {
+    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
-    String meeting_length_list_pref = prefs.getString(context
-        .getString(R.string.meeting_length_list_pref), context
-        .getString(R.string.meeting_length_default_value));
+    String meeting_length_list_pref = prefs.getString(
+        context.getString(R.string.meeting_length_list_pref),
+        context.getString(R.string.meeting_length_default_value));
     meetingLength = Integer.parseInt(meeting_length_list_pref);
 
-    String time_span_list_pref = prefs.getString(context
-        .getString(R.string.time_span_list_pref), context
-        .getString(R.string.time_span_default_value));
+    String time_span_list_pref = prefs.getString(context.getString(R.string.time_span_list_pref),
+        context.getString(R.string.time_span_default_value));
     timeSpan = Integer.parseInt(time_span_list_pref);
 
-    Boolean skip_weekends_chkbox_pref = prefs.getBoolean(context
-        .getString(R.string.skip_weekends_chkbox_pref), Boolean
-        .getBoolean(context.getString(R.string.skip_weekends_default_value)));
+    Boolean skip_weekends_chkbox_pref = prefs.getBoolean(
+        context.getString(R.string.skip_weekends_chkbox_pref),
+        Boolean.getBoolean(context.getString(R.string.skip_weekends_default_value)));
     skipWeekends = skip_weekends_chkbox_pref.booleanValue();
 
-    Boolean use_working_hours_chkbox_pref = prefs.getBoolean(context
-        .getString(R.string.use_working_hours_chkbox_pref),
-        Boolean.getBoolean(context
-            .getString(R.string.use_working_hours_default_value)));
+    Boolean use_working_hours_chkbox_pref = prefs.getBoolean(
+        context.getString(R.string.use_working_hours_chkbox_pref),
+        Boolean.getBoolean(context.getString(R.string.use_working_hours_default_value)));
     useWorkingHours = use_working_hours_chkbox_pref.booleanValue();
 
-    Boolean use_calendar_settings_chkbox_pref = prefs.getBoolean(context
-        .getString(R.string.use_calendar_settings_chkbox_pref), Boolean
-        .getBoolean(context
-            .getString(R.string.use_calendar_settings_default_value)));
+    Boolean use_calendar_settings_chkbox_pref = prefs.getBoolean(
+        context.getString(R.string.use_calendar_settings_chkbox_pref),
+        Boolean.getBoolean(context.getString(R.string.use_calendar_settings_default_value)));
     useCalendarSettings = use_calendar_settings_chkbox_pref.booleanValue();
 
-    workingHoursStart = prefs.getString(context
-        .getString(R.string.working_hours_start_text_pref), context
-        .getString(R.string.working_hours_start_default_value));
+    workingHoursStart = prefs.getString(context.getString(R.string.working_hours_start_text_pref),
+        context.getString(R.string.working_hours_start_default_value));
 
-    workingHoursEnd = prefs.getString(context
-        .getString(R.string.working_hours_end_text_pref), context
-        .getString(R.string.working_hours_end_default_value));
+    workingHoursEnd = prefs.getString(context.getString(R.string.working_hours_end_text_pref),
+        context.getString(R.string.working_hours_end_default_value));
+
+    AccountChooser.getInstance().chooseAccount(context, new AccountChooser.AccountHandler() {
+      @Override
+      public void handleAccountSelected(Account result) {
+        if (result != null) {
+          account = result;
+        }
+        if (handleSettings != null)
+          handleSettings.run();
+      }
+    });
   }
-
 }

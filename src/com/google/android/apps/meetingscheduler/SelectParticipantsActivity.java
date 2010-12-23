@@ -16,7 +16,6 @@
 
 package com.google.android.apps.meetingscheduler;
 
-import android.accounts.Account;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -57,6 +56,9 @@ public class SelectParticipantsActivity extends Activity {
   /** List of attendees that are selectable */
   private List<Attendee> attendees = new ArrayList<Attendee>();
 
+  /** Application settings */
+  private Settings settings;
+
   /** ArrayAdapter for the attendees */
   private SelectableAttendeeAdapter attendeeAdapter;
 
@@ -88,23 +90,23 @@ public class SelectParticipantsActivity extends Activity {
     // Adding action to the button
     addFindMeetingButtonListener();
 
-    if (savedInstanceState == null) {
-      AccountChooser.getInstance().chooseAccount(this, new AccountChooser.AccountHandler() {
-        @Override
-        public void handleAccountSelected(Account account) {
-          if (account != null) {
-            // Set the attendee retriever with the selected account.
-            attendeeRetriever = new PhoneContactsRetriever(SelectParticipantsActivity.this, account);
+    // Get settings
+    settings = Settings.getInstance(this, new Runnable() {
+      @Override
+      public void run() {
+        if (settings.getAccount() != null) {
+          // Set the attendee retriever with the selected account.
+          attendeeRetriever = new PhoneContactsRetriever(SelectParticipantsActivity.this, settings
+              .getAccount());
 
-            // Adding selectable attendees
-            retrieveAttendee();
-          } else {
-            SelectParticipantsActivity.this.finish();
-          }
+          // Adding selectable attendees
+          retrieveAttendee();
+        } else {
+          // No account.
+          SelectParticipantsActivity.this.finish();
         }
-      });
-    } else
-      System.err.println("ON CREATE RECALLED !!!!!!!!!! " + attendees.size());
+      }
+    });
   }
 
   /**
@@ -266,7 +268,6 @@ public class SelectParticipantsActivity extends Activity {
    * Sets the help text beside the Find Meetings button
    */
   private void setFindMeetingButtonText() {
-    Settings settings = Settings.getInstance(this);
     StringBuilder string = new StringBuilder();
 
     int meetingLength = settings.getMeetingLength();

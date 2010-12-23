@@ -32,7 +32,7 @@ import java.util.List;
 
 /**
  * Get the contacts from the phone for the selected account.
- *
+ * 
  * @author Alain Vongsouvanh (alainv@google.com)
  */
 public class PhoneContactsRetriever implements AttendeeRetriever {
@@ -53,7 +53,8 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
     List<Attendee> result = new ArrayList<Attendee>();
     ContentResolver cr = activity.getContentResolver();
     Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, new String[] { Contacts._ID,
-        Contacts.DISPLAY_NAME, Contacts.IN_VISIBLE_GROUP }, Contacts.IN_VISIBLE_GROUP + " = 1", null, null);
+        Contacts.DISPLAY_NAME, Contacts.IN_VISIBLE_GROUP }, Contacts.IN_VISIBLE_GROUP + " = 1",
+        null, null);
 
     if (cursor.getCount() > 0) {
       while (cursor.moveToNext()) {
@@ -80,12 +81,21 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
 
   @Override
   public Attendee getCurrentUser() {
-    return new Attendee("Me", account.name, null);
+    return new Attendee("Me (" + account.name + ")", account.name, null);
+  }
+
+  /**
+   * Set current account.
+   * 
+   * @param account The new account to set.
+   */
+  public void setAccount(Account account) {
+    this.account = account;
   }
 
   /**
    * Get the correct email address to use for the current contact.
-   *
+   * 
    * @param cr
    * @param id
    * @return
@@ -96,7 +106,7 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
         Email.IS_PRIMARY + " DESC");
     String result = null;
 
-    if (cursor!= null && cursor.getCount() > 0) {
+    if (cursor != null && cursor.getCount() > 0) {
       while (cursor.moveToNext()) {
         String email = cursor.getString(cursor.getColumnIndex(Email.DATA));
 
@@ -123,7 +133,7 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
 
   /**
    * Check if two emails are of the same domain.
-   *
+   * 
    * @param lhs
    * @param rhs
    * @return
@@ -134,7 +144,7 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
 
   /**
    * Get the contact's Photo URI if it exists.
-   *
+   * 
    * @param cr
    * @param id
    * @return The contact's Photo URI.

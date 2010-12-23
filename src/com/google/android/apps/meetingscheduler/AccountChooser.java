@@ -18,8 +18,8 @@ package com.google.android.apps.meetingscheduler;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.util.Log;
@@ -79,14 +79,14 @@ public class AccountChooser {
    * be alerted. If only one account is found that will be used. If multiple
    * accounts are found the user will be allowed to choose.
    * 
-   * @param activity The parent activity
+   * @param context The parent activity
    * @param handler The handler to be notified when an account has been selected
    */
-  public void chooseAccount(final Activity activity, final AccountHandler handler) {
-    final Account[] accounts = AccountManager.get(activity).getAccountsByType(
+  public void chooseAccount(final Context context, final AccountHandler handler) {
+    final Account[] accounts = AccountManager.get(context).getAccountsByType(
         MeetingSchedulerConstants.ACCOUNT_TYPE);
     if (accounts.length < 1) {
-      alertNoAccounts(activity, handler);
+      alertNoAccounts(context, handler);
       return;
     }
     if (accounts.length == 1) {
@@ -108,7 +108,7 @@ public class AccountChooser {
       choices[i] = accounts[i].name;
     }
 
-    final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+    final AlertDialog.Builder builder = new AlertDialog.Builder(context);
     builder.setTitle(R.string.choose_account_title);
     builder.setItems(choices, new DialogInterface.OnClickListener() {
       public void onClick(DialogInterface dialog, int which) {
@@ -129,9 +129,9 @@ public class AccountChooser {
   /**
    * Puts up a dialog alerting the user that no suitable account was found.
    */
-  private void alertNoAccounts(final Activity activity, final AccountHandler handler) {
+  private void alertNoAccounts(final Context context, final AccountHandler handler) {
     Log.e(MeetingSchedulerConstants.TAG, "No matching accounts found.");
-    final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+    final AlertDialog.Builder builder = new AlertDialog.Builder(context);
     builder.setTitle(R.string.no_account_found_title);
     builder.setMessage(R.string.no_account_found);
     builder.setCancelable(true);
