@@ -75,14 +75,23 @@ public class AccountChooser {
   }
 
   /**
+   * Reset selected account value.
+   */
+  public void Reset() {
+    selectedAccount = null;
+    selectedAccountIndex = -1;
+  }
+
+  /**
    * Chooses the best account to upload to. If no account is found the user will
    * be alerted. If only one account is found that will be used. If multiple
    * accounts are found the user will be allowed to choose.
    * 
    * @param context The parent activity
+   * @param oldAccount TODO
    * @param handler The handler to be notified when an account has been selected
    */
-  public void chooseAccount(final Context context, final AccountHandler handler) {
+  public void chooseAccount(final Context context, String oldAccount, final AccountHandler handler) {
     final Account[] accounts = AccountManager.get(context).getAccountsByType(
         MeetingSchedulerConstants.ACCOUNT_TYPE);
     if (accounts.length < 1) {
@@ -94,10 +103,19 @@ public class AccountChooser {
       return;
     }
 
-    // TODO This should be read out of a preference.
     if (selectedAccount != null) {
       handler.handleAccountSelected(selectedAccount);
       return;
+    }
+
+    if (oldAccount != null) {
+      for (Account account : accounts) {
+        if (account.name.equals(oldAccount)) {
+          selectedAccount = account;
+          handler.handleAccountSelected(selectedAccount);
+          return;
+        }
+      }
     }
 
     // Let the user choose.

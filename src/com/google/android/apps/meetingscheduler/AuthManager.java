@@ -175,7 +175,7 @@ public class AuthManager {
       public void run() {
         if (invalidate && authToken != null)
           accountManager.invalidateAuthToken(MeetingSchedulerConstants.ACCOUNT_TYPE, authToken);
-        AccountChooser.getInstance().chooseAccount(activity, new AccountChooser.AccountHandler() {
+        AccountChooser.getInstance().chooseAccount(activity, null, new AccountChooser.AccountHandler() {
           @Override
           public void handleAccountSelected(Account account) {
             if (account != null) {

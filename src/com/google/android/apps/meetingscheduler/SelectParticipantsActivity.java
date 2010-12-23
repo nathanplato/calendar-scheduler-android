@@ -16,9 +16,12 @@
 
 package com.google.android.apps.meetingscheduler;
 
+import android.accounts.Account;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -48,21 +51,23 @@ import java.util.List;
  */
 public class SelectParticipantsActivity extends Activity {
 
-  /** The Attendee Retriever */
-  // TODO: Change this to a fully-working not mock implementation, if this needs
-  // asynchronous calls we should probably use an AsyncTask
-  private AttendeeRetriever attendeeRetriever;
-
   /** List of attendees that are selectable */
   private List<Attendee> attendees = new ArrayList<Attendee>();
 
   /** Application settings */
   private Settings settings;
 
+  /** Selected user account */
+  private Account account;
+
   /** ArrayAdapter for the attendees */
   private SelectableAttendeeAdapter attendeeAdapter;
 
   private EditText editText;
+
+  private ProgressDialog progressBar;
+
+  private Handler handler = new Handler();
 
   /**
    * Cancel Activity re-launch when screen orientation changes.
@@ -90,17 +95,23 @@ public class SelectParticipantsActivity extends Activity {
     // Adding action to the button
     addFindMeetingButtonListener();
 
-    // Get settings
-    settings = Settings.getInstance(this, new Runnable() {
+    setAttendeeListView();
+
+    getSettings();
+  }
+
+  /**
+   * Get Settings
+   */
+  private void getSettings() {
+    Settings.initInstance(this, new Runnable() {
       @Override
       public void run() {
-        if (settings.getAccount() != null) {
-          // Set the attendee retriever with the selected account.
-          attendeeRetriever = new PhoneContactsRetriever(SelectParticipantsActivity.this, settings
-              .getAccount());
+        settings = Settings.getInstance();
 
-          // Adding selectable attendees
-          retrieveAttendee();
+        if (settings.getAccount() != null) {
+          account = settings.getAccount();
+          retrieveAttendees();
         } else {
           // No account.
           SelectParticipantsActivity.this.finish();
@@ -148,12 +159,11 @@ public class SelectParticipantsActivity extends Activity {
   private void setAttendeeListView() {
     final ListView attendeeListView = (ListView) findViewById(R.id.attendee_list);
 
+    editText = getEditTextFilter();
+    attendeeListView.addHeaderView(editText);
+
     attendeeAdapter = new SelectableAttendeeAdapter(this, attendees);
     attendeeAdapter.sort();
-
-    editText = getEditTextFilter();
-
-    attendeeListView.addHeaderView(editText);
 
     attendeeListView.setAdapter(attendeeAdapter);
 
@@ -172,11 +182,34 @@ public class SelectParticipantsActivity extends Activity {
   /**
    * Retrieve the list of attendees.
    */
-  private void retrieveAttendee() {
-    attendees = attendeeRetriever.getPossibleAttendees();
+  private void retrieveAttendees() {
+    // Retrieves the attendees on a seperate thread.
+    new Thread(new Runnable() {
+      public void run() {
+        AttendeeRetriever attendeeRetriever = new PhoneContactsRetriever(
+            SelectParticipantsActivity.this, account);
+        final List<Attendee> newAttendees = attendeeRetriever.getPossibleAttendees();
 
-    if (attendees != null)
-      setAttendeeListView();
+        // Update the progress bar
+        handler.post(new Runnable() {
+          public void run() {
+            if (newAttendees != null) {
+              attendees.clear();
+              attendees.addAll(newAttendees);
+
+              attendeeAdapter.sort();
+              attendeeAdapter.notifyDataSetChanged();
+            }
+
+            if (progressBar != null)
+              progressBar.dismiss();
+          }
+        });
+      }
+    }).start();
+    // Show a progress bar while the common free times are computed.
+    progressBar = ProgressDialog.show(this, null, getString(R.string.retrieve_contacts_wait_text),
+        true);
   }
 
   /**
@@ -307,6 +340,16 @@ public class SelectParticipantsActivity extends Activity {
   @Override
   protected void onResume() {
     super.onResume();
+
+    settings.reload(this);
+    if (settings.getAccount() == null) {
+      finish();
+      return;
+    }
+    if (!settings.getAccount().equals(account)) {
+      account = settings.getAccount();
+      retrieveAttendees();
+    }
     setFindMeetingButtonText();
   }
 

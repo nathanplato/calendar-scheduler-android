@@ -78,7 +78,7 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
     Map<Date, List<Busy>> sortedBusyTimes = filterByDate(busyTimes);
     List<AvailableMeetingTime> result = new ArrayList<AvailableMeetingTime>();
 
-    Settings settings = Settings.getInstance(context);
+    Settings settings = Settings.getInstance();
     addMissingDays(sortedBusyTimes, startDate, settings.getTimeSpan());
 
     if (settings.doSkipWeekends()) {

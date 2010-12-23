@@ -100,8 +100,8 @@ public class SetEventDetailsActivity extends Activity {
       @Override
       public void onClick(View v) {
         // Show a progress bar while the common free times are computed.
-        progressBar = ProgressDialog.show(SetEventDetailsActivity.this, null, "Creating Event...",
-            true);
+        progressBar = ProgressDialog.show(SetEventDetailsActivity.this, null,
+            SetEventDetailsActivity.this.getString(R.string.create_event_wait_text), true);
 
         final String title = getString(R.id.event_title_text);
         final String where = getString(R.id.event_where_text);

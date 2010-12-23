@@ -147,14 +147,16 @@ public class SelectMeetingTimeActivity extends Activity {
     case MeetingSchedulerConstants.GET_LOGIN:
       if (resultCode == RESULT_OK && auth != null) {
         auth.authResult(resultCode, results);
-      }
+      } else if (resultCode == RESULT_CANCELED)
+        Toast.makeText(this, getString(R.string.authentication_failure), Toast.LENGTH_LONG).show();
       break;
     case MeetingSchedulerConstants.AUTHENTICATED:
       if (resultCode == RESULT_OK && auth != null)
         authenticated();
+      else if (resultCode == RESULT_CANCELED)
+        Toast.makeText(this, getString(R.string.authentication_failure), Toast.LENGTH_LONG).show();
       break;
     case MeetingSchedulerConstants.CREATE_EVENT:
-      System.err.println("ON ACTIVITY RESULT: " + resultCode);
       if (resultCode == RESULT_OK) {
         Toast.makeText(this, getString(R.string.event_creation_success), Toast.LENGTH_SHORT).show();
       } else if (resultCode == RESULT_FIRST_USER && results != null) {
@@ -175,10 +177,10 @@ public class SelectMeetingTimeActivity extends Activity {
       @Override
       public void onClick(View v) {
         if (auth.getAuthToken() != null) {
-          startDate.add(Calendar.DAY_OF_YEAR, Settings.getInstance(getApplicationContext())
-              .getTimeSpan());
+          startDate.add(Calendar.DAY_OF_YEAR, Settings.getInstance().getTimeSpan());
           findMeetings();
-        }
+        } else
+          authenticate();
       }
     });
   }
@@ -234,8 +236,8 @@ public class SelectMeetingTimeActivity extends Activity {
       }
     }).start();
     // Show a progress bar while the common free times are computed.
-    progressBar = ProgressDialog.show(this, null,
-        "Please wait while querying attendees availabilities...", true);
+    progressBar = ProgressDialog.show(this, null, getString(R.string.find_meeting_time_wait_text),
+        true);
   }
 
   /**
@@ -248,7 +250,7 @@ public class SelectMeetingTimeActivity extends Activity {
     // Adding the available meeting times to the UI
     ExpandableListView meetingListContainer = (ExpandableListView) findViewById(R.id.meeting_list);
     meetingListContainer.setAdapter(new EventExpandableListAdapter(this, availableMeetingTimes,
-        Settings.getInstance(this).getMeetingLength()));
+        Settings.getInstance().getMeetingLength()));
   }
 
 }

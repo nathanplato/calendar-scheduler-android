@@ -47,9 +47,6 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
 
   @Override
   public List<Attendee> getPossibleAttendees() {
-    if (account == null)
-      return null;
-
     List<Attendee> result = new ArrayList<Attendee>();
     ContentResolver cr = activity.getContentResolver();
     Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, new String[] { Contacts._ID,
@@ -65,7 +62,7 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
           String name = cursor.getString(cursor.getColumnIndex(Contacts.DISPLAY_NAME));
           String imageUri = getPhotoUri(cr, id);
 
-          result.add(new Attendee(name, email, imageUri));
+          result.add(new Attendee(name + " (" + email + ")", email, imageUri));
         }
       }
       cursor.close();
@@ -82,15 +79,6 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
   @Override
   public Attendee getCurrentUser() {
     return new Attendee("Me (" + account.name + ")", account.name, null);
-  }
-
-  /**
-   * Set current account.
-   * 
-   * @param account The new account to set.
-   */
-  public void setAccount(Account account) {
-    this.account = account;
   }
 
   /**

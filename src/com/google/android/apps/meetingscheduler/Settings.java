@@ -31,44 +31,44 @@ public class Settings {
   private static Settings settings;
 
   /** Length of the meeting to find in minutes */
-  private static int meetingLength;
+  private int meetingLength;
 
   /** How long in the future do we have to look for in days */
-  private static int timeSpan;
+  private int timeSpan;
 
   /**
    * True if we need to take into consideration some working hours instead of
    * matching any time in the day
    */
-  private static boolean useWorkingHours;
+  private boolean useWorkingHours;
 
   /**
    * True if don't return results on weekend.
    */
-  private static boolean skipWeekends;
+  private boolean skipWeekends;
 
   /**
    * True if we should use the Google Calendar working hour setting of each
    * participant or false if we should just use the times manually set.
    */
-  private static boolean useCalendarSettings;
+  private boolean useCalendarSettings;
 
   /**
    * Time the working hours start in hours from midnight (0=midnight, 9.5 =
    * 9:30am, 23 = 11pm)
    */
-  private static String workingHoursStart;
+  private String workingHoursStart;
 
   /**
    * Time the working hours end in hours from midnight (0=midnight), 9.5 =
    * 9:30am, 23 = 11pm)
    */
-  private static String workingHoursEnd;
+  private String workingHoursEnd;
 
   /**
    * User selected account.
    */
-  private static Account account;
+  private Account account;
 
   /**
    * Can't get Settings directly, use getInstance instead
@@ -77,24 +77,19 @@ public class Settings {
   }
 
   /**
-   * Get an instance of the Settings bean
+   * Get an instance of the Settings bean. Must call
+   * {@link #initInstance(Context, Runnable)} before.
    * 
    * @return An instance of Settings
    */
-  public static Settings getInstance(Context context) {
-    return getInstance(context, null);
+  public static Settings getInstance() {
+    return settings;
   }
 
-  /**
-   * Get an instance of the Settings bean
-   * 
-   * @return An instance of Settings
-   */
-  public static Settings getInstance(Context context, Runnable handleSettings) {
+  public static void initInstance(Context context, Runnable handleSettings) {
     if (settings == null)
       settings = new Settings();
-    getSettings(context, handleSettings);
-    return settings;
+    settings.getSettings(context, handleSettings);
   }
 
   public int getMeetingLength() {
@@ -129,12 +124,21 @@ public class Settings {
     return account;
   }
 
+  public void changeAccount(final Context context, final Runnable handleSettings) {
+    AccountChooser.getInstance().Reset();
+    getAccount(context, null, handleSettings);
+  }
+
+  public void reload(final Context context) {
+    getSettings(context, null);
+  }
+
   /**
    * Gets the settings from the Preferences screen
    * 
    * @param context The application context
    */
-  private static void getSettings(Context context, final Runnable handleSettings) {
+  private void getSettings(Context context, final Runnable handleSettings) {
     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
     String meeting_length_list_pref = prefs.getString(
@@ -167,15 +171,37 @@ public class Settings {
     workingHoursEnd = prefs.getString(context.getString(R.string.working_hours_end_text_pref),
         context.getString(R.string.working_hours_end_default_value));
 
-    AccountChooser.getInstance().chooseAccount(context, new AccountChooser.AccountHandler() {
-      @Override
-      public void handleAccountSelected(Account result) {
-        if (result != null) {
-          account = result;
-        }
-        if (handleSettings != null)
-          handleSettings.run();
-      }
-    });
+    String oldAccount = prefs.getString(context.getString(R.string.selected_account_text_pref),
+        null);
+    getAccount(context, oldAccount, handleSettings);
+  }
+
+  /**
+   * @param context
+   * @param oldAccount TODO
+   * @param handleSettings
+   */
+  private void getAccount(final Context context, String oldAccount, final Runnable handleSettings) {
+    AccountChooser.getInstance().chooseAccount(context, oldAccount,
+        new AccountChooser.AccountHandler() {
+          @Override
+          public void handleAccountSelected(Account result) {
+            if (result != null) {
+              account = result;
+              saveAccount(context);
+            }
+            if (handleSettings != null)
+              handleSettings.run();
+          }
+        });
+  }
+
+  /**
+   * @param context
+   */
+  private void saveAccount(final Context context) {
+    SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(context).edit();
+    editor.putString(context.getString(R.string.selected_account_text_pref), account.name);
+    editor.commit();
   }
 }

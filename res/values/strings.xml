@@ -57,4 +57,11 @@
 <string name="send_event_notifications_label">Send event notifications</string>
 <string name="event_creation_success">Meeting created</string>
 <string name="event_creation_failure">Failed to create meeting</string>
+<string name="selected_account_text_pref">selected_account_text_pref</string>
+<string name="selected_account">Selected Account</string>
+
+<string name="retrieve_contacts_wait_text">Please wait while retrieving contacts...</string>
+<string name="find_meeting_time_wait_text">Please wait while querying attendees availabilities...</string>
+<string name="create_event_wait_text">Creating Event...</string>
+<string name="authentication_failure">Failed to authenticate on Google, please try again...</string>
 </resources>

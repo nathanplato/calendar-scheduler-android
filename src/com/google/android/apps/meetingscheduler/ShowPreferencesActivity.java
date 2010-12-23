@@ -41,6 +41,8 @@ import android.widget.TimePicker;
  */
 public class ShowPreferencesActivity extends PreferenceActivity implements
     OnSharedPreferenceChangeListener {
+  private Preference selectedAccountPref;
+  private String selectedAccountKey;
   private ListPreference meetingLengthPref;
   private String meetingLengthKey;
   private ListPreference timeSpanPref;
@@ -93,6 +95,16 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
     addPreferencesFromResource(R.xml.preferences);
 
     preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+    selectedAccountKey = getString(R.string.selected_account_text_pref);
+    selectedAccountPref = (Preference) getPreferenceScreen().findPreference(selectedAccountKey);
+    selectedAccountPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+      @Override
+      public boolean onPreferenceClick(Preference preference) {
+        Settings.getInstance().changeAccount(ShowPreferencesActivity.this, null);
+        return true;
+      }
+    });
 
     meetingLengthKey = getString(R.string.meeting_length_list_pref);
     meetingLengthPref = (ListPreference) getPreferenceScreen().findPreference(meetingLengthKey);
@@ -152,6 +164,8 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
       enableDisableUseCalendarSettingPreferences();
     } else if (key.equals(skipWeekendsKey)) {
       setSkipWeekendsSummary();
+    } else if (key.equals(selectedAccountKey)) {
+      setSelectedAccountSummary();
     }
   }
 
@@ -165,6 +179,8 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
 
     // Set up a listener to listen to any preference changes
     getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+
+    setSelectedAccountSummary();
 
     if (meetingLengthPref.getEntry() != null && meetingLengthPref.getEntry().length() > 0) {
       meetingLengthPref.setSummary(meetingLengthPref.getEntry());
@@ -289,6 +305,13 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
     workingHoursEndMinutes = Integer.parseInt(endTime[1]);
 
     setTimeSummary(workingHoursEndPref, workingHoursEndHours, workingHoursEndMinutes);
+  }
+
+  /**
+   * Sets the summary for the selected account preference
+   */
+  private void setSelectedAccountSummary() {
+    selectedAccountPref.setSummary(Settings.getInstance().getAccount().name);
   }
 
   /**

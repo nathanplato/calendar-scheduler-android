@@ -61,7 +61,7 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
     Map<String, Attendee> batchIds = new HashMap<String, Attendee>();
     CalendarService service = CalendarServiceManager.getInstance().getService();
     FreeBusyList batchRequest = createBatchRequest(attendees, batchIds);
-    CalendarUrl url = createBatchUrl(startDate, Settings.getInstance(context).getTimeSpan());
+    CalendarUrl url = createBatchUrl(startDate, Settings.getInstance().getTimeSpan());
 
     try {
       FreeBusyList freeBusyFeed = service.executeBatch(batchRequest, url);
