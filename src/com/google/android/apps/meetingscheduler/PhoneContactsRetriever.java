@@ -65,9 +65,9 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
           result.add(new Attendee(name + " (" + email + ")", email, imageUri));
         }
       }
-      cursor.close();
     } else
       Log.e(MeetingSchedulerConstants.TAG, "No contacts found.");
+    cursor.close();
 
     Attendee current = getCurrentUser();
     current.selected = true;
@@ -94,23 +94,25 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
         Email.IS_PRIMARY + " DESC");
     String result = null;
 
-    if (cursor != null && cursor.getCount() > 0) {
-      while (cursor.moveToNext()) {
-        String email = cursor.getString(cursor.getColumnIndex(Email.DATA));
+    if (cursor != null) {
+      if (cursor.getCount() > 0) {
+        while (cursor.moveToNext()) {
+          String email = cursor.getString(cursor.getColumnIndex(Email.DATA));
 
-        if (!email.contains("@"))
-          continue;
-        // Get the first same-domain account.
-        if (isSameDomain(account.name, email))
-          return email;
-        // Else, get the first gmail address.
-        else if (isSameDomain("@gmail.com", email) && result == null)
-          result = email;
-      }
-      // If none of the above has been found, use the first email address.
-      if (result == null) {
-        if (cursor.moveToFirst()) {
-          result = cursor.getString(cursor.getColumnIndex(Email.DATA));
+          if (!email.contains("@"))
+            continue;
+          // Get the first same-domain account.
+          if (isSameDomain(account.name, email))
+            return email;
+          // Else, get the first gmail address.
+          else if (isSameDomain("@gmail.com", email) && result == null)
+            result = email;
+        }
+        // If none of the above has been found, use the first email address.
+        if (result == null) {
+          if (cursor.moveToFirst()) {
+            result = cursor.getString(cursor.getColumnIndex(Email.DATA));
+          }
         }
       }
       cursor.close();
@@ -143,12 +145,12 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
     Cursor cursor = cr.query(photoUri, new String[] { Contacts.Photo.DATA15 }, null, null, null);
     String result = null;
 
-    if (cursor != null && cursor.getCount() > 0) {
+    if (cursor != null) {
       if (cursor.moveToFirst()) {
-        byte[] data = cursor.getBlob(0);
-        if (data != null) {
-          result = photoUri.toString();
-        }
+        // byte[] data = cursor.getBlob(0);
+        // if (data != null) {
+        result = photoUri.toString();
+        // }
       }
       cursor.close();
     }

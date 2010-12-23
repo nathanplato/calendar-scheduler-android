@@ -109,13 +109,7 @@ public class SelectParticipantsActivity extends Activity {
       public void run() {
         settings = Settings.getInstance();
 
-        if (settings.getAccount() != null) {
-          account = settings.getAccount();
-          retrieveAttendees();
-        } else {
-          // No account.
-          SelectParticipantsActivity.this.finish();
-        }
+        applySettings();
       }
     });
   }
@@ -341,7 +335,16 @@ public class SelectParticipantsActivity extends Activity {
   protected void onResume() {
     super.onResume();
 
-    settings.reload(this);
+    if (settings != null) {
+      settings.reload(this);
+      applySettings();
+    }
+  }
+
+  /**
+   * 
+   */
+  private void applySettings() {
     if (settings.getAccount() == null) {
       finish();
       return;
@@ -352,5 +355,4 @@ public class SelectParticipantsActivity extends Activity {
     }
     setFindMeetingButtonText();
   }
-
 }
