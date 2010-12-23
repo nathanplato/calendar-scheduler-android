@@ -29,9 +29,9 @@
 	<string name="working_hours_start_summary">When you get to work</string>
 	<string name="working_hours_end">Working hours end</string>
 	<string name="working_hours_end_summary">When you leave office</string>
-	<string name="use_calendar_settings">Use Google Calendar</string>
-	<string name="use_calendar_settings_summary_unchecked">Use working hours specified below</string>
-	<string name="use_calendar_settings_summary_checked">Get working hours from Calendar</string>
+	
+	
+	
 	<string name="preferences_screen">preferences_screen</string>
 	<string name="meeting_length">Meeting duration</string>
 	<string name="working_hours_category">Working hours</string>
@@ -39,14 +39,14 @@
 	<string name="time_span_list_pref">time_span_list_pref</string>
 	<string name="skip_weekends_chkbox_pref">skip_weekends_chkbox_pref</string>
 	<string name="use_working_hours_chkbox_pref">use_working_hours_chkbox_pref</string>
-	<string name="use_calendar_settings_chkbox_pref">use_calendar_settings_chkbox_pref</string>
+	
 	<string name="working_hours_start_text_pref">working_hours_start_text_pref</string>
 	<string name="working_hours_end_text_pref">working_hours_end_text_pref</string>
 	<string name="working_hours_pref_category">working_hours_pref_category</string>
 	<string name="meeting_length_default_value">60</string>
 	<string name="skip_weekends_default_value">true</string>
 	<string name="use_working_hours_default_value">true</string>
-	<string name="use_calendar_settings_default_value">false</string>
+	
 	<string name="working_hours_start_default_value">9.0</string>
 	<string name="working_hours_end_default_value">17.30</string>
 <string name="set_event_details_caption">Event details...</string>

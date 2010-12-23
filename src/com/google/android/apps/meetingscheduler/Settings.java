@@ -48,12 +48,6 @@ public class Settings {
   private boolean skipWeekends;
 
   /**
-   * True if we should use the Google Calendar working hour setting of each
-   * participant or false if we should just use the times manually set.
-   */
-  private boolean useCalendarSettings;
-
-  /**
    * Time the working hours start in hours from midnight (0=midnight, 9.5 =
    * 9:30am, 23 = 11pm)
    */
@@ -108,10 +102,6 @@ public class Settings {
     return skipWeekends;
   }
 
-  public boolean doUseCalendarSettings() {
-    return useCalendarSettings;
-  }
-
   public String getWorkingHoursStart() {
     return workingHoursStart;
   }
@@ -159,11 +149,6 @@ public class Settings {
         context.getString(R.string.use_working_hours_chkbox_pref),
         Boolean.getBoolean(context.getString(R.string.use_working_hours_default_value)));
     useWorkingHours = use_working_hours_chkbox_pref.booleanValue();
-
-    Boolean use_calendar_settings_chkbox_pref = prefs.getBoolean(
-        context.getString(R.string.use_calendar_settings_chkbox_pref),
-        Boolean.getBoolean(context.getString(R.string.use_calendar_settings_default_value)));
-    useCalendarSettings = use_calendar_settings_chkbox_pref.booleanValue();
 
     workingHoursStart = prefs.getString(context.getString(R.string.working_hours_start_text_pref),
         context.getString(R.string.working_hours_start_default_value));

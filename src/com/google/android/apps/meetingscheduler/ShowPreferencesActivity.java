@@ -51,8 +51,6 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
   private String skipWeekendsKey;
   private CheckBoxPreference useWorkingHoursPref;
   private String useWorkingHoursKey;
-  private String useCalendarSettingsKey;
-  private CheckBoxPreference useCalendarSettingsPref;
   private String workingHoursStartKey;
   private Preference workingHoursStartPref;
   private String workingHoursEndKey;
@@ -119,10 +117,6 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
     useWorkingHoursPref = (CheckBoxPreference) getPreferenceScreen().findPreference(
         useWorkingHoursKey);
 
-    useCalendarSettingsKey = getString(R.string.use_calendar_settings_chkbox_pref);
-    useCalendarSettingsPref = (CheckBoxPreference) getPreferenceScreen().findPreference(
-        useCalendarSettingsKey);
-
     workingHoursStartKey = getString(R.string.working_hours_start_text_pref);
     workingHoursStartPref = (Preference) getPreferenceScreen().findPreference(workingHoursStartKey);
     workingHoursStartPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
@@ -143,7 +137,6 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
       }
     });
 
-    enableDisableUseCalendarSettingPreferences();
     enableDisableWorkingHoursPreferences();
   }
 
@@ -159,9 +152,6 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
     } else if (key.equals(useWorkingHoursKey)) {
       setUseWorkingHoursSummary();
       enableDisableWorkingHoursPreferences();
-    } else if (key.equals(useCalendarSettingsKey)) {
-      setUseCalendarSettingsSummary();
-      enableDisableUseCalendarSettingPreferences();
     } else if (key.equals(skipWeekendsKey)) {
       setSkipWeekendsSummary();
     } else if (key.equals(selectedAccountKey)) {
@@ -194,8 +184,6 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
 
     setSkipWeekendsSummary();
 
-    setUseCalendarSettingsSummary();
-
     setUseWorkingHoursSummary();
 
     setWorkingHoursStartSummary();
@@ -219,28 +207,10 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
    * UseWorkingHoursSettings preference
    */
   private void enableDisableWorkingHoursPreferences() {
-    if (preferences.getBoolean(useWorkingHoursKey, true)) {
-      useCalendarSettingsPref.setEnabled(true);
-      enableDisableUseCalendarSettingPreferences();
-    } else {
-      useCalendarSettingsPref.setEnabled(false);
-      workingHoursStartPref.setEnabled(false);
-      workingHoursEndPref.setEnabled(false);
-    }
-  }
+    boolean enabled = preferences.getBoolean(useWorkingHoursKey, true);
 
-  /**
-   * Enables or disables preferences fields based on the value of the
-   * UseCalendarSettings preference
-   */
-  private void enableDisableUseCalendarSettingPreferences() {
-    if (preferences.getBoolean(useCalendarSettingsKey, false)) {
-      workingHoursStartPref.setEnabled(false);
-      workingHoursEndPref.setEnabled(false);
-    } else {
-      workingHoursStartPref.setEnabled(true);
-      workingHoursEndPref.setEnabled(true);
-    }
+    workingHoursStartPref.setEnabled(enabled);
+    workingHoursEndPref.setEnabled(enabled);
   }
 
   /**
@@ -251,18 +221,6 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
       skipWeekendsPref.setSummary(getString(R.string.skip_weekends_summary_checked));
     } else {
       skipWeekendsPref.setSummary(getString(R.string.skip_weekends_summary_unchecked));
-    }
-  }
-
-  /**
-   * Sets the summary for the useCalendarSettings checkbox preference
-   */
-  private void setUseCalendarSettingsSummary() {
-    if (useCalendarSettingsPref.isChecked()) {
-      useCalendarSettingsPref.setSummary(getString(R.string.use_calendar_settings_summary_checked));
-    } else {
-      useCalendarSettingsPref
-          .setSummary(getString(R.string.use_calendar_settings_summary_unchecked));
     }
   }
 
@@ -403,7 +361,6 @@ public class ShowPreferencesActivity extends PreferenceActivity implements
     editor.putString(timeSpanKey, timeSpanPref.getValue());
     editor.putBoolean(skipWeekendsKey, skipWeekendsPref.isChecked());
     editor.putBoolean(useWorkingHoursKey, useWorkingHoursPref.isChecked());
-    editor.putBoolean(useCalendarSettingsKey, useCalendarSettingsPref.isChecked());
     editor.putString(workingHoursStartKey, workingHoursStartHours + "." + workingHoursStartMinutes);
     editor.putString(workingHoursEndKey, workingHoursEndHours + "." + workingHoursEndMinutes);
     editor.commit();
