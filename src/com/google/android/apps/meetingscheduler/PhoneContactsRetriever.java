@@ -20,6 +20,8 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.Context;
+import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
@@ -53,22 +55,24 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
         Contacts.DISPLAY_NAME, Contacts.IN_VISIBLE_GROUP }, Contacts.IN_VISIBLE_GROUP + " = 1",
         null, null);
 
-    if (cursor.getCount() > 0) {
-      while (cursor.moveToNext()) {
-        long id = cursor.getLong(cursor.getColumnIndex(Contacts._ID));
-        String email = getEmail(cr, id);
+    try {
+      if (cursor.getCount() > 0) {
+        while (cursor.moveToNext()) {
+          long id = cursor.getLong(cursor.getColumnIndex(Contacts._ID));
+          String email = getEmail(cr, id);
 
-        if (email != null) {
-          String name = cursor.getString(cursor.getColumnIndex(Contacts.DISPLAY_NAME));
-          String imageUri = getPhotoUri(cr, id);
+          if (email != null) {
+            String name = cursor.getString(cursor.getColumnIndex(Contacts.DISPLAY_NAME));
+            String imageUri = getPhotoUri(activity, cr, id);
 
-          result.add(new Attendee(name + " (" + email + ")", email, imageUri));
+            result.add(new Attendee(name + " (" + email + ")", email, imageUri));
+          }
         }
-      }
-    } else
-      Log.e(MeetingSchedulerConstants.TAG, "No contacts found.");
-    cursor.close();
-
+      } else
+        Log.e(MeetingSchedulerConstants.TAG, "No contacts found.");
+    } finally {
+      cursor.close();
+    }
     Attendee current = getCurrentUser();
     current.selected = true;
     result.add(current);
@@ -95,27 +99,30 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
     String result = null;
 
     if (cursor != null) {
-      if (cursor.getCount() > 0) {
-        while (cursor.moveToNext()) {
-          String email = cursor.getString(cursor.getColumnIndex(Email.DATA));
+      try {
+        if (cursor.getCount() > 0) {
+          while (cursor.moveToNext()) {
+            String email = cursor.getString(cursor.getColumnIndex(Email.DATA));
 
-          if (!email.contains("@"))
-            continue;
-          // Get the first same-domain account.
-          if (isSameDomain(account.name, email))
-            return email;
-          // Else, get the first gmail address.
-          else if (isSameDomain("@gmail.com", email) && result == null)
-            result = email;
-        }
-        // If none of the above has been found, use the first email address.
-        if (result == null) {
-          if (cursor.moveToFirst()) {
-            result = cursor.getString(cursor.getColumnIndex(Email.DATA));
+            if (!email.contains("@"))
+              continue;
+            // Get the first same-domain account.
+            if (isSameDomain(account.name, email))
+              return email;
+            // Else, get the first gmail address.
+            else if (isSameDomain("@gmail.com", email) && result == null)
+              result = email;
+          }
+          // If none of the above has been found, use the first email address.
+          if (result == null) {
+            if (cursor.moveToFirst()) {
+              result = cursor.getString(cursor.getColumnIndex(Email.DATA));
+            }
           }
         }
+      } finally {
+        cursor.close();
       }
-      cursor.close();
     }
 
     return result;
@@ -139,23 +146,21 @@ public class PhoneContactsRetriever implements AttendeeRetriever {
    * @param id
    * @return The contact's Photo URI.
    */
-  private String getPhotoUri(ContentResolver cr, long id) {
+  private String getPhotoUri(Context context, ContentResolver cr, long id) {
     Uri contactUri = ContentUris.withAppendedId(Contacts.CONTENT_URI, id);
     Uri photoUri = Uri.withAppendedPath(contactUri, Contacts.Photo.CONTENT_DIRECTORY);
-    Cursor cursor = cr.query(photoUri, new String[] { Contacts.Photo.DATA15 }, null, null, null);
-    String result = null;
 
-    if (cursor != null) {
-      if (cursor.moveToFirst()) {
-        // byte[] data = cursor.getBlob(0);
-        // if (data != null) {
-        result = photoUri.toString();
-        // }
-      }
-      cursor.close();
+    // TODO: Do not try to open the file to check if it exists.
+    try {
+      AssetFileDescriptor descriptor = context.getContentResolver().openAssetFileDescriptor(
+          photoUri, "r");
+
+      descriptor.close();
+      return photoUri.toString();
+    } catch (Exception e) {
+      // The contact has no pictures.
+      return null;
     }
-
-    return result;
   }
 
 }
