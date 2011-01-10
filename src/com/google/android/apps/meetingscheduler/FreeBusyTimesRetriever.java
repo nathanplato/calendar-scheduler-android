@@ -74,7 +74,6 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
 
           if (busyTimes == null)
             busyTimes = new ArrayList<Busy>();
-          cleanBusyTimes(busyTimes);
           result.put(attendee, busyTimes);
         } else
           Log.e(MeetingSchedulerConstants.TAG, "Unknown batch ID: " + entry.batchId);
@@ -85,28 +84,6 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
     }
 
     return result;
-  }
-
-  /**
-   * Split multiple day-busy times into multiple one-day busy times.
-   * 
-   * @param busyTimes The busy times to clean.
-   */
-  private void cleanBusyTimes(List<Busy> busyTimes) {
-    for (int i = 0; i < busyTimes.size();) {
-      Busy current = busyTimes.get(i);
-      Date currentStart = new Date(current.when.startTime.value);
-      Date currentEnd = new Date(current.when.endTime.value);
-
-      if (!isSameDay(currentStart, currentEnd)) {
-        List<Busy> splitted = splitBusyTimes(currentStart, currentEnd);
-
-        busyTimes.remove(i);
-        busyTimes.addAll(i, splitted);
-        i += splitted.size();
-      } else
-        ++i;
-    }
   }
 
   /**
@@ -192,56 +169,6 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
     calendar.add(Calendar.DAY_OF_YEAR, daysToAdd);
 
     return new DateTime(calendar.getTime());
-  }
-
-  /**
-   * Check if two dates are on the same day.
-   * 
-   * @param lhs
-   * @param rhs
-   * @return True if {@code lhs} and {@code rhs} are on the same day.
-   */
-  private boolean isSameDay(Date lhs, Date rhs) {
-    Calendar clhs = new GregorianCalendar(CalendarServiceManager.getInstance().getTimeZone());
-    Calendar crhs = new GregorianCalendar(CalendarServiceManager.getInstance().getTimeZone());
-
-    clhs.setTime(lhs);
-    crhs.setTime(rhs);
-    return clhs.get(Calendar.DAY_OF_YEAR) == crhs.get(Calendar.DAY_OF_YEAR)
-        && clhs.get(Calendar.YEAR) == crhs.get(Calendar.YEAR);
-  }
-
-  /**
-   * Split a busy time into a set of busy time, each for one day.
-   * 
-   * @param startDate
-   * @param endDate
-   * @return
-   */
-  private List<Busy> splitBusyTimes(Date startDate, Date endDate) {
-    List<Busy> result = new ArrayList<Busy>();
-    Calendar currentDay = new GregorianCalendar(CalendarServiceManager.getInstance().getTimeZone());
-
-    currentDay.setTime(startDate);
-    setTime(currentDay, 23, 59, 59, 999);
-
-    result.add(createBusyTime(startDate, currentDay.getTime()));
-
-    while (true) {
-      setTime(currentDay, 0, 0, 0, 0);
-      currentDay.add(Calendar.DAY_OF_YEAR, 1);
-      Date currentStart = currentDay.getTime();
-
-      if (isSameDay(currentStart, endDate))
-        break;
-
-      setTime(currentDay, 23, 59, 59, 999);
-      result.add(createBusyTime(currentStart, currentDay.getTime()));
-    }
-
-    result.add(createBusyTime(currentDay.getTime(), endDate));
-
-    return result;
   }
 
   /**

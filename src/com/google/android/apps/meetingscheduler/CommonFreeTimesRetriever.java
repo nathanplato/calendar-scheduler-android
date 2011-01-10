@@ -20,18 +20,14 @@ import android.content.Context;
 
 import com.google.api.client.util.DateTime;
 import com.google.api.data.calendar.v2.model.Busy;
+import com.google.api.data.gdata.v2.model.When;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Compute the common free times from the busy times fetched from the
@@ -75,101 +71,113 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
       Date startDate, Context context) {
     Map<Attendee, List<Busy>> busyTimes = busyTimeRetriever.getBusyTimes(attendees, startDate,
         context);
-    Map<Date, List<Busy>> sortedBusyTimes = filterByDate(busyTimes);
-    List<AvailableMeetingTime> result = new ArrayList<AvailableMeetingTime>();
-
     Settings settings = Settings.getInstance();
-    addMissingDays(sortedBusyTimes, startDate, settings.getTimeSpan());
+    List<Busy> listBusyTimes = cleanBusyTimes(busyTimes, startDate, settings);
+    List<AvailableMeetingTime> result = findAvailableMeetings(listBusyTimes);
+
+    filterMeetingLength(result, settings.getMeetingLength());
+    splitAvailableMeetings(result);
+
+    addAttendees(result, attendees);
+
+    return result;
+  }
+
+  /**
+   * Add weekends and non-working hours as busy times if requested and merge all
+   * the busy times.
+   * @param busyTimes The busy times to clean
+   * @param startDate The date from which to start cleaning
+   * @param settings The setting to use for cleaning the busy times
+   * 
+   * @return A list of cleaned busy times.
+   */
+  private List<Busy> cleanBusyTimes(Map<Attendee, List<Busy>> busyTimes, Date startDate,
+      Settings settings) {
+    List<Busy> listBusyTimes = new ArrayList<Busy>();
+
+    for (List<Busy> busy : busyTimes.values()) {
+      listBusyTimes.addAll(busy);
+    }
 
     if (settings.doSkipWeekends()) {
-      removeWeekends(sortedBusyTimes);
+      addWeekends(listBusyTimes, startDate, settings.getTimeSpan());
+    }
+    if (settings.doUseWorkingHours()) {
+      addWorkingHours(listBusyTimes, startDate, settings.getTimeSpan(),
+          DateUtils.getCalendar(settings.getWorkingHoursStart()),
+          DateUtils.getCalendar(settings.getWorkingHoursEnd()));
     }
 
-    for (Map.Entry<Date, List<Busy>> busyTime : sortedBusyTimes.entrySet()) {
-      List<AvailableMeetingTime> availableMeetings;
-
-      mergeBusyTimes(busyTime.getValue());
-      availableMeetings = findAvailableMeetings(busyTime.getValue(),
-          new DateTime(busyTime.getKey()));
-
-      if (settings.doUseWorkingHours()) {
-        Date from = getDate(new DateTime(busyTime.getKey().getTime()),
-            settings.getWorkingHoursStart());
-        filterStartTime(availableMeetings, from);
-
-        Date to = getDate(new DateTime(busyTime.getKey().getTime()), settings.getWorkingHoursEnd());
-        filterEndTime(availableMeetings, to);
-      }
-
-      filterMeetingLength(availableMeetings, settings.getMeetingLength());
-
-      addAttendees(availableMeetings, attendees);
-
-      result.addAll(availableMeetings);
-    }
-
-    return result;
+    mergeBusyTimes(listBusyTimes);
+    return listBusyTimes;
   }
 
   /**
-   * Separate busy times from the same day.
+   * Add weekends as busy times to the list of busy times.
    * 
-   * @param busyTimes The busy times to sort.
-   * @return The separated busy times.
-   */
-  private Map<Date, List<Busy>> filterByDate(Map<Attendee, List<Busy>> busyTimes) {
-    Map<Date, List<Busy>> result;
-    result = new HashMap<Date, List<Busy>>();
-    for (List<Busy> busyTime : busyTimes.values()) {
-      for (Busy busy : busyTime) {
-        Date day = getDate(busy.when.startTime, "0.0");
-
-        List<Busy> current = result.get(day);
-
-        if (current == null) {
-          current = new ArrayList<Busy>();
-          result.put(day, current);
-        }
-        current.add(busy);
-      }
-    }
-    return result;
-  }
-
-  /**
-   * Add days were every attendees are available.
-   * 
-   * @param busyTimes The list of busy times to which to add the days.
+   * @param busyTimes The list of busy times to which to add the weekends
+   * @param startDate The start date from which
    * @param timeSpan
    */
-  private void addMissingDays(Map<Date, List<Busy>> busyTimes, Date startDate, int timeSpan) {
+  private void addWeekends(List<Busy> busyTimes, Date startDate, int timeSpan) {
     Calendar calendar = new GregorianCalendar(CalendarServiceManager.getInstance().getTimeZone());
 
     calendar.setTime(startDate);
-    setTime(calendar, 0, 0);
+
     for (int i = 0; i < timeSpan; ++i) {
-      if (!busyTimes.containsKey(calendar.getTime()))
-        busyTimes.put(calendar.getTime(), new ArrayList<Busy>());
+      int day = calendar.get(Calendar.DAY_OF_WEEK);
+
+      if (day == Calendar.SATURDAY || day == Calendar.SUNDAY) {
+        Busy toAdd = new Busy();
+
+        toAdd.when = new When();
+        DateUtils.setTime(calendar, 0, 0, 0, 0);
+        toAdd.when.startTime = new DateTime(calendar.getTime());
+        DateUtils.setTime(calendar, 23, 59, 59, 999);
+        toAdd.when.endTime = new DateTime(calendar.getTime());
+        busyTimes.add(toAdd);
+      }
       calendar.add(Calendar.DAY_OF_YEAR, 1);
     }
   }
 
   /**
-   * Remove weekends from the busy times.
+   * Add non-working hours as busy times to the list of busy times.
    * 
-   * @param sortedBusyTimes The busy times from which to remove the weekends.
+   * @param busyTimes The busy times to which to add the non-working hours
+   * @param startDate The start date from which to start adding busy times
+   * @param timeSpan The number of day for which to add busy times
+   * @param min The starting working hour
+   * @param max The ending working hour
    */
-  private void removeWeekends(Map<Date, List<Busy>> sortedBusyTimes) {
-    Set<Date> keys = new HashSet<Date>(sortedBusyTimes.keySet());
+  private void addWorkingHours(List<Busy> busyTimes, Date startDate, int timeSpan, Calendar min,
+      Calendar max) {
+    Calendar current = new GregorianCalendar(CalendarServiceManager.getInstance().getTimeZone());
 
-    for (Date day : keys) {
-      Calendar calendar = new GregorianCalendar(CalendarServiceManager.getInstance().getTimeZone());
+    current.setTime(startDate);
 
-      calendar.setTime(day);
-      if (calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY
-          || calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
-        sortedBusyTimes.remove(day);
-      }
+    DateUtils.setTime(current, min);
+
+    if (current.getTime().after(startDate)) {
+      Busy toAdd = new Busy();
+
+      toAdd.when = new When();
+      toAdd.when.startTime = new DateTime(startDate.getTime());
+      toAdd.when.endTime = new DateTime(current.getTime());
+      busyTimes.add(toAdd);
+    }
+
+    for (int i = 0; i < timeSpan; ++i) {
+      DateUtils.setTime(current, max);
+      Busy toAdd = new Busy();
+
+      toAdd.when = new When();
+      toAdd.when.startTime = new DateTime(current.getTime());
+      current.add(Calendar.DAY_OF_YEAR, 1);
+      DateUtils.setTime(current, min);
+      toAdd.when.endTime = new DateTime(current.getTime());
+      busyTimes.add(toAdd);
     }
   }
 
@@ -180,7 +188,7 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
    * @param busyTimes The busy times to merge.
    */
   private void mergeBusyTimes(List<Busy> busyTimes) {
-    sortBusyTime(busyTimes);
+    DateUtils.sortBusyTime(busyTimes);
 
     // Merge every busy slots.
     for (int i = 0; i < busyTimes.size(); ++i) {
@@ -189,8 +197,8 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
       for (int j = i + 1; j < busyTimes.size();) {
         Busy next = busyTimes.get(j);
 
-        if (compareDateTime(current.when.endTime, next.when.startTime) >= 0) {
-          if (compareDateTime(current.when.endTime, next.when.endTime) < 0)
+        if (DateUtils.compareDateTime(current.when.endTime, next.when.startTime) >= 0) {
+          if (DateUtils.compareDateTime(current.when.endTime, next.when.endTime) < 0)
             current.when.endTime = next.when.endTime;
           busyTimes.remove(j);
         } else
@@ -206,25 +214,38 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
    * @param busyTimes The busy times from which to compute the available meeting
    * @return The available meetings time from 00:00 to 23:59 of the same day.
    */
-  private List<AvailableMeetingTime> findAvailableMeetings(List<Busy> busyTimes, DateTime day) {
+  private List<AvailableMeetingTime> findAvailableMeetings(List<Busy> busyTimes) {
     List<AvailableMeetingTime> result = new ArrayList<AvailableMeetingTime>();
-    AvailableMeetingTime tmp = new AvailableMeetingTime();
-    Date first = new Date();
-    Date last = new Date();
 
-    setFistAndLast(day, first, last);
+    for (int i = 0; i < busyTimes.size() - 1;) {
+      AvailableMeetingTime tmp = new AvailableMeetingTime();
 
-    tmp.start = first;
-    for (Busy busy : busyTimes) {
-      tmp.end = new Date(busy.when.startTime.value);
+      tmp.start = new Date(busyTimes.get(i).when.endTime.value);
+      tmp.end = new Date(busyTimes.get(++i).when.startTime.value);
       result.add(tmp);
-      tmp = new AvailableMeetingTime();
-      tmp.start = new Date(busy.when.endTime.value);
     }
-    tmp.end = last;
-    result.add(tmp);
 
     return result;
+  }
+
+  /**
+   * Split multiple day-meeting times into multiple one-day meeting times.
+   * 
+   * @param busyTimes The busy times to clean.
+   */
+  private void splitAvailableMeetings(List<AvailableMeetingTime> meetings) {
+    for (int i = 0; i < meetings.size();) {
+      AvailableMeetingTime current = meetings.get(i);
+
+      if (!DateUtils.isSameDay(current.start, current.end)) {
+        List<AvailableMeetingTime> splitted = splitMeetingTimes(current.start, current.end);
+
+        meetings.remove(i);
+        meetings.addAll(i, splitted);
+        i += splitted.size();
+      } else
+        ++i;
+    }
   }
 
   /**
@@ -240,43 +261,36 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
   }
 
   /**
-   * Filter the meetings that are before {@code from}.
+   * Split a busy time into a set of busy time, each for one day.
    * 
-   * @param meetings The meetings to filter.
-   * @param from The start time from which to filter the meetings.
+   * @param startDate
+   * @param endDate
+   * @return
    */
-  private void filterStartTime(List<AvailableMeetingTime> meetings, Date from) {
-    while (meetings.size() > 0) {
-      AvailableMeetingTime meeting = meetings.get(0);
+  private List<AvailableMeetingTime> splitMeetingTimes(Date startDate, Date endDate) {
+    List<AvailableMeetingTime> result = new ArrayList<AvailableMeetingTime>();
+    Calendar currentDay = new GregorianCalendar(CalendarServiceManager.getInstance().getTimeZone());
 
-      if (meeting.start.before(from)) {
-        if (meeting.end.before(from) || meeting.end.equals(from))
-          meetings.remove(0);
-        else
-          meeting.start = from;
-      } else
+    currentDay.setTime(startDate);
+    DateUtils.setTime(currentDay, 23, 59, 59, 999);
+
+    result.add(new AvailableMeetingTime(startDate, currentDay.getTime()));
+
+    while (true) {
+      DateUtils.setTime(currentDay, 0, 0, 0, 0);
+      currentDay.add(Calendar.DAY_OF_YEAR, 1);
+      Date currentStart = currentDay.getTime();
+
+      if (DateUtils.isSameDay(currentStart, endDate))
         break;
-    }
-  }
 
-  /**
-   * Filter the meetings that are after {@code to}.
-   * 
-   * @param meetings The meetings to filter.
-   * @param to The end time from which to filter the meetings.
-   */
-  private void filterEndTime(List<AvailableMeetingTime> meetings, Date to) {
-    while (meetings.size() > 0) {
-      AvailableMeetingTime slot = meetings.get(meetings.size() - 1);
-
-      if (slot.end.after(to)) {
-        if (slot.start.after(to) || slot.start.equals(to))
-          meetings.remove(meetings.size() - 1);
-        else
-          slot.end = to;
-      } else
-        break;
+      DateUtils.setTime(currentDay, 23, 59, 59, 999);
+      result.add(new AvailableMeetingTime(currentStart, currentDay.getTime()));
     }
+
+    result.add(new AvailableMeetingTime(currentDay.getTime(), endDate));
+
+    return result;
   }
 
   /**
@@ -306,85 +320,6 @@ public class CommonFreeTimesRetriever implements EventTimeRetriever {
     long difference = meeting.end.getTime() - meeting.start.getTime();
 
     return (int) difference / 60000;
-  }
-
-  /**
-   * Set the first (00:00) and last (23:59) time of the same day as {@code from}
-   * .
-   * 
-   * @param from The date from which to get the day.
-   * @param first The date object on which to set the first time of the day.
-   * @param last The date object on which to set the last time of the day.
-   */
-  private void setFistAndLast(DateTime from, Date first, Date last) {
-    Calendar tmpCalendar = new GregorianCalendar(CalendarServiceManager.getInstance().getTimeZone());
-    tmpCalendar.setTime(getDate(from, "0.0"));
-
-    first.setTime(tmpCalendar.getTimeInMillis());
-
-    tmpCalendar.set(Calendar.HOUR_OF_DAY, 23);
-    tmpCalendar.set(Calendar.MINUTE, 59);
-    tmpCalendar.set(Calendar.SECOND, 59);
-    tmpCalendar.set(Calendar.MILLISECOND, 999);
-
-    last.setTime(tmpCalendar.getTimeInMillis());
-  }
-
-  /**
-   * Sort the busy times by start time.
-   * 
-   * @param busyTime The busy times to sort.
-   */
-  private void sortBusyTime(List<Busy> busyTime) {
-    Collections.sort(busyTime, new Comparator<Busy>() {
-      @Override
-      public int compare(Busy lhs, Busy rhs) {
-        int compare = compareDateTime(lhs.when.startTime, rhs.when.startTime);
-        if (compare == 0)
-          return compareDateTime(lhs.when.endTime, rhs.when.endTime);
-        return compare;
-      }
-    });
-  }
-
-  /**
-   * Get the current day from {@code dateTime} with the given
-   * {@code hoursDotMinutes}.
-   * 
-   * @param dateTime The DateTime object from which to read the day.
-   * @param hoursDotMinutes The hour and minutes of day as a String in hh.MM
-   *          format
-   * @return The computed Date object.
-   */
-  private Date getDate(DateTime dateTime, String hoursDotMinutes) {
-    Calendar calendar = new GregorianCalendar(CalendarServiceManager.getInstance().getTimeZone());
-    calendar.setTime(new Date(dateTime.value));
-    String[] time = hoursDotMinutes.split("\\.");
-    setTime(calendar, Integer.parseInt(time[0]), Integer.parseInt(time[1]));
-    return calendar.getTime();
-  }
-
-  /**
-   * @param calendar
-   * @param hour
-   * @param minute
-   */
-  private void setTime(Calendar calendar, int hour, int minute) {
-    calendar.set(Calendar.HOUR_OF_DAY, hour);
-    calendar.set(Calendar.MINUTE, minute);
-    calendar.clear(Calendar.SECOND);
-    calendar.clear(Calendar.MILLISECOND);
-  }
-
-  /**
-   * Compare 2 DateTime objects.
-   * 
-   * @param lhs
-   * @param rhs
-   * @return The comparison of the 2 DateTimes.
-   */
-  private int compareDateTime(DateTime lhs, DateTime rhs) {
-    return (int) (lhs.value - rhs.value);
   }
 
 }
