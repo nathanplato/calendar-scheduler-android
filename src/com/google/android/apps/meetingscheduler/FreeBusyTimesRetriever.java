@@ -27,7 +27,6 @@ import com.google.api.data.calendar.v2.model.Busy;
 import com.google.api.data.calendar.v2.model.FreeBusy;
 import com.google.api.data.calendar.v2.model.FreeBusyList;
 import com.google.api.data.gdata.v2.model.Link;
-import com.google.api.data.gdata.v2.model.When;
 import com.google.api.data.gdata.v2.model.batch.BatchOperation;
 
 import java.io.IOException;
@@ -169,39 +168,6 @@ public class FreeBusyTimesRetriever implements BusyTimesRetriever {
     calendar.add(Calendar.DAY_OF_YEAR, daysToAdd);
 
     return new DateTime(calendar.getTime());
-  }
-
-  /**
-   * Create a Busy object with {@code startDate} as starting time and
-   * {@code endDate} as ending time.
-   * 
-   * @param startDate The date on which the Busy object starts.
-   * @param endDate The date on which the Busy object ends.
-   * @return The newly created Busy object.
-   */
-  private Busy createBusyTime(Date startDate, Date endDate) {
-    Busy result = new Busy();
-
-    result.when = new When();
-    result.when.startTime = new DateTime(startDate);
-    result.when.endTime = new DateTime(endDate);
-    return result;
-  }
-
-  /**
-   * Set the time on the {@code calendar}.
-   * 
-   * @param calendar
-   * @param hour
-   * @param minute
-   * @param second
-   * @param millis
-   */
-  private void setTime(Calendar calendar, int hour, int minute, int second, int millis) {
-    calendar.set(Calendar.HOUR_OF_DAY, hour);
-    calendar.set(Calendar.MINUTE, minute);
-    calendar.set(Calendar.SECOND, second);
-    calendar.set(Calendar.MILLISECOND, millis);
   }
 
 }
